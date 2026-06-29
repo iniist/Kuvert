@@ -19,14 +19,14 @@
 <meta name="twitter:title" content="Kuvert – Geheime Nachrichten verschicken, ohne Server">
 <meta name="twitter:description" content="Verschlüsselt im Browser, komplett ohne Server. Die Nachricht lebt nur im Link.">
 <meta name="twitter:image" content="https://kuvert.net/og-image.png">
-<meta name="theme-color" content="#e6e8e8">
-<script>(function(){try{var s=localStorage.getItem("kuvert-theme");var d=s?s:((window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light");document.documentElement.setAttribute("data-theme",d);}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+<meta name="theme-color" content="#15181b">
+<script>(function(){try{var s=localStorage.getItem("kuvert-theme");var d=s?s:"dark";document.documentElement.setAttribute("data-theme",d);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <script src="./qrcode.js"></script>
 <link rel="stylesheet" href="./fonts.css">
 <style>
   :root{
     --paper:#e6e8e8; --paper-2:#f1f2f1; --paper-3:#e1e4e4;
-    --ink:#1d2024; --ink-soft:#4f555a; --ink-faint:#868d92;
+    --ink:#1d2024; --ink-soft:#3a4046; --ink-faint:#868d92;
     --ox:#3c5a6b; --ox-bright:#4d7388; --brass:#3c5a6b;
     --good:#3e7a59; --line:#c6cbcc; --rule:#bbc1c2;
     --hatch:rgba(29,32,36,.03);
@@ -821,6 +821,25 @@
     try{ localStorage.setItem("kuvert-theme",next); }catch(e){}
     sync();
   });
+})();
+</script>
+<script>
+(function(){
+  var re=/(?<=[.!?])(?<!\b[A-Za-zÄÖÜäöü]\.)\s+(?=[A-ZÄÖÜ„"“])/;
+  function ventilate(sel){
+    document.querySelectorAll(sel).forEach(function(el){
+      var w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null),nodes=[],n;
+      while((n=w.nextNode())) nodes.push(n);
+      nodes.forEach(function(node){
+        var parts=node.nodeValue.split(re);
+        if(parts.length<2) return;
+        var frag=document.createDocumentFragment();
+        parts.forEach(function(p,i){ if(i) frag.appendChild(document.createElement("br")); frag.appendChild(document.createTextNode(p)); });
+        node.parentNode.replaceChild(frag,node);
+      });
+    });
+  }
+  ventilate(".lede,.rsub,.receive-hint,.tile p,.step p,.why p,.cmp-lead,.cmp-foot,.faq .ans");
 })();
 </script>
 </body>
