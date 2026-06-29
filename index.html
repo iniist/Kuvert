@@ -260,6 +260,8 @@
   .seal-mark.footer-mark{width:26px;height:26px}.seal-mark.footer-mark svg{width:15px;height:15px}
   .foot-links{display:flex;gap:18px;font-family:var(--mono);font-size:13px}
   .foot-links a{text-decoration:none;color:var(--ink);border-bottom:1px solid var(--rule)}
+  .foot-links a.donate{border:1.5px solid var(--ox);border-radius:3px;color:var(--ox);padding:4px 13px;transition:background .15s,color .15s}
+  .foot-links a.donate:hover{background:var(--ox);color:#fff;border-color:var(--ox)}
   .foot-links a:hover{color:var(--ox);border-color:var(--ox)}
   footer > span{font-family:var(--serif);font-style:italic;color:var(--ink-faint);font-size:14px}
 
@@ -550,7 +552,7 @@
 
   <footer>
     <div class="brand"><span class="seal-mark footer-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10.5" r="1.7" fill="currentColor" stroke="none"/><path d="M12 12 L10.7 16 H13.3 Z" fill="currentColor" stroke="none"/></svg></span>Kuvert</div>
-    <nav class="foot-links"><a href="https://github.com/iniist/Kuvert" target="_blank" rel="noopener">GitHub</a><a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a></nav>
+    <nav class="foot-links"><a class="donate" href="https://www.paypal.me/iniist" target="_blank" rel="noopener">Spende</a><a href="https://github.com/iniist/Kuvert" target="_blank" rel="noopener">GitHub</a><a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a></nav>
     <span>Versiegelt im Browser. Gespeichert nirgends.</span>
   </footer>
 
