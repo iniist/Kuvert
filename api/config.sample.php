@@ -55,6 +55,10 @@ return [
     // 'https://polar.sh/<dein-org-slug>/portal'  (leer = kein Link)
     'manage_url'  => '',
 
+    // Pro öffentlich anbieten? Solange false, zeigt pro.html „Bald verfügbar“.
+    // Zum Testen vorher trotzdem nutzbar über:  https://kuvert.net/pro.html?preview
+    'pro_launched' => false,
+
     // E-Mail-Benachrichtigung „Dein Kuvert wurde geöffnet“.
     // transport: 'smtp' (empfohlen, Strato: smtp.strato.de:465 ssl),
     //            'mail' (PHP mail()), 'log' (schreibt nur in api/_data/mail.log – zum Testen)

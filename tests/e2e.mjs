@@ -114,15 +114,57 @@ try {
   await rp3.waitForFunction(() => document.getElementById("rTitle").textContent === "Zurückgezogen");
   step("Zurückziehen: Empfänger sieht „Zurückgezogen“");
 
-  /* ---------- kostenlose Seite unverändert funktionsfähig ---------- */
+  /* ---------- kostenlose Seite: versiegeln, öffnen ---------- */
   const fp = await sender.newPage(); watch(fp, "free");
   await fp.goto(BASE + "/index.html");
-  await fp.fill("#secret", "hallo");
-  await fp.waitForFunction(() => document.getElementById("blob").textContent.startsWith("0"));
-  const bg = await fp.evaluate(() => getComputedStyle(document.querySelector(".tool")).borderTopStyle);
-  assert.equal(bg, "solid", "kuvert.css ist geladen");
+  const radius = await fp.evaluate(() => getComputedStyle(document.getElementById("tool")).borderTopLeftRadius);
+  assert.equal(radius, "22px", "kuvert.css ist geladen");
+  await fp.fill("#secret", "WLAN: Kekse123");
+  await fp.fill("#pass", "geheim");
+  await fp.waitForFunction(() => document.getElementById("blob").textContent.startsWith("1"));
+  await fp.click("#qrBtn");
+  await fp.waitForSelector("#qr.show");
   await fp.screenshot({ path: path.join(OUT, "7-free.png") });
-  step("kostenlose Seite funktioniert mit ausgelagertem CSS");
+  await fp.click("#copyBtn");
+  await fp.waitForSelector("#copyBtn.done");
+  const freeLink = await fp.evaluate(() => navigator.clipboard.readText());
+  assert.match(freeLink, /\/index\.html#1[A-Za-z0-9_-]+$/);
+  const fr = await rcv.newPage(); watch(fr, "free-recipient");
+  await fr.goto(freeLink);
+  await fr.waitForSelector("body.recipient");
+  await fr.fill("#rPass", "falsch"); await fr.click("#rOpen");
+  await fr.waitForSelector("#rNote.err");
+  await fr.fill("#rPass", "geheim"); await fr.click("#rOpen");
+  await fr.waitForSelector("#rReveal.shown");
+  assert.equal(await fr.textContent("#rReveal"), "WLAN: Kekse123");
+  step("kostenlos: versiegeln, kopieren, falsches/richtiges Passwort");
+
+  const plainPage = await rcv.newPage(); watch(plainPage, "free-plain");
+  await plainPage.goto(BASE + "/index.html#0" + Buffer.from("hallo welt").toString("base64url"));
+  await plainPage.waitForSelector("#rReveal.shown");
+  assert.equal(await plainPage.textContent("#rReveal"), "hallo welt");
+  const anchor = await rcv.newPage(); watch(anchor, "anchor");
+  await anchor.goto(BASE + "/index.html#faq");
+  assert.equal(await anchor.evaluate(() => document.body.classList.contains("recipient")), false, "#faq ist kein Kuvert-Link");
+  step("kostenlos: unverschlüsselter Link + Sprungmarken");
+
+  /* ---------- Pro „Bald verfügbar“, wenn nicht freigeschaltet ---------- */
+  const soonCtx = await browser.newContext();
+  await soonCtx.route("**/api/index.php?a=config", async (route) => {
+    const res = await route.fetch(); const json = await res.json();
+    await route.fulfill({ response: res, json: { ...json, launched: false } });
+  });
+  const sp2 = await soonCtx.newPage(); watch(sp2, "soon");
+  await sp2.goto(BASE + "/pro.html");
+  await sp2.waitForFunction(() => document.getElementById("heroBadge").textContent === "Bald verfügbar");
+  await sp2.waitForTimeout(300);
+  assert.equal(await sp2.isVisible("#app"), false, "Pro-App versteckt");
+  assert.ok(await sp2.isVisible("#heroSoon"));
+  await sp2.screenshot({ path: path.join(OUT, "9-pro-soon.png") });
+  await sp2.goto(BASE + "/pro.html?preview");
+  await sp2.waitForSelector("#app", { state: "visible" });
+  assert.equal(await sp2.textContent("#heroBadge"), "Vorschau");
+  step("Pro: „Bald verfügbar“, mit ?preview testbar");
 
   const mob = await browser.newContext({ viewport: { width: 375, height: 800 } });
   const mp = await mob.newPage(); watch(mp, "mobile");
@@ -137,6 +179,7 @@ try {
   console.log("\nE2E: alles grün");
 } catch (e) {
   console.error("E2E FEHLER:", e.message, errors);
+  for (const ctx of browser.contexts()) for (const pg of ctx.pages()) { try { await pg.screenshot({ path: path.join(OUT, "fail-" + Math.random().toString(36).slice(2, 6) + ".png") }); console.error(" Seite:", pg.url(), await pg.evaluate(() => [document.readyState, document.body.className, (document.getElementById("rTitle")||{}).textContent, (document.getElementById("rNote")||{}).textContent, ["rPassBlock","rOpenBlock","rOnce"].map(i => { const e = document.getElementById(i); return e ? i + ":" + getComputedStyle(e).display + ":" + JSON.stringify(e.getBoundingClientRect()) : i; }), innerWidth, innerHeight, document.visibilityState])); } catch (_) {} }
   process.exitCode = 1;
 } finally {
   await browser.close();

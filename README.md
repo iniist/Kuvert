@@ -38,7 +38,7 @@ Alles passiert über die native [Web Crypto API](https://developer.mozilla.org/e
 
 Die Seite lädt **nichts** von Drittanbietern:
 
-- Schriften (Sora, Inter, IBM Plex Mono) liegen lokal in `fonts/` (via [Fontsource](https://fontsource.org/)).
+- Schriften (Geist, Geist Mono, Instrument Serif, OFL-Lizenz) liegen lokal in `fonts/` (via [Fontsource](https://fontsource.org/)).
 - Die QR-Bibliothek ([qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)) liegt lokal als `qrcode.js`.
 
 Du kannst das selbst prüfen: Öffne den Netzwerk-Tab deines Browsers und beobachte beim Tippen und Versiegeln — es geht keine einzige Anfrage hinaus.
@@ -46,16 +46,21 @@ Du kannst das selbst prüfen: Öffne den Netzwerk-Tab deines Browsers und beobac
 ## Dateien
 
 ```
-index.html        Die kostenlose App (HTML + JS), komplett ohne Server
-kuvert.css        Gemeinsames Stylesheet (index.html, pro.html)
+index.html        Kostenlose App (komplett ohne Server)
+app.js            Logik der kostenlosen App (Verschlüsseln, Link, QR, Empfänger)
+site.js           Gemeinsam: Farbschema, Navigation, Einblenden
+kuvert.css        Design-System für alle Seiten
+fonts.css, fonts/ Lokale Schriften (Geist, Geist Mono, Instrument Serif)
 qrcode.js         QR-Code-Bibliothek (lokal, MIT-Lizenz, von kazuhikoarase)
-fonts.css, fonts/ Lokale Schriften
+favicon.svg, og-image.png
 
-pro.html          Kuvert Pro – Oberfläche
+pro.html          Kuvert Pro – Seite (zeigt „Bald verfügbar“, bis pro_launched = true)
 pro.js            Kuvert Pro – Logik (Lizenz, Versenden, Empfangen, Status)
 pro-crypto.js     Kuvert Pro – Verschlüsselung (Web Crypto)
 api/              Kuvert Pro – PHP-Backend (nur api/index.php ist öffentlich)
-tests/            API- und Browser-Tests (nicht hochladen)
+
+docs/             Anleitung + Vorlage für og-image.png (wird nicht hochgeladen)
+tests/            API- und Browser-Tests (wird nicht hochgeladen)
 ```
 
 ---
@@ -84,6 +89,11 @@ Die kostenlose Version bleibt unverändert serverlos.
 Der Server speichert: Chiffretext, Hashes, Zeiten, Fehlversuche, optional die E-Mail-Adresse und einen HMAC des
 Lizenzschlüssels. Chiffretext und E-Mail werden beim Öffnen, Ablauf oder Zurückziehen sofort gelöscht, der Rest
 nach spätestens 7 weiteren Tagen.
+
+### Pro freischalten
+
+Solange in der Server-Konfiguration `pro_launched` nicht `true` ist (oder gar keine Konfiguration existiert),
+zeigt `pro.html` „Bald verfügbar“. Zum Testen vorher: `https://kuvert.net/pro.html?preview`.
 
 ### Lizenzen
 

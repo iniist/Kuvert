@@ -34,6 +34,7 @@ function kv_action_config(PDO $db, array &$deferred): array
     $c = kv_config();
     return [
         'version'         => 1,
+        'launched'        => (bool)$c['pro_launched'],
         'buyUrl'          => (string)$c['buy_url'],
         'manageUrl'       => (string)$c['manage_url'],
         'priceLabel'      => (string)$c['price_label'],

@@ -24,13 +24,14 @@ return [
   'buy_url'  => 'https://example.test/kaufen',
   'price_label' => '19 € einmalig',
   'manage_url'  => 'https://example.test/portal',
+  'pro_launched' => true,
   'rate'     => ['license' => 1000, 'create' => 1000, 'peek' => 1000, 'read' => 1000, 'status' => 1000],
 ];
 PHP
 export KUVERT_CONFIG="$TMP/config.php"
 
 KEY=$(php api/_cli/license.php create --label=test 2>/dev/null)
-php -S 127.0.0.1:$PORT -t "$ROOT" > "$TMP/server.log" 2>&1 &
+PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:$PORT -t "$ROOT" > "$TMP/server.log" 2>&1 &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null || true' EXIT
 for i in $(seq 1 30); do curl -sf "http://127.0.0.1:$PORT/api/index.php?a=config" >/dev/null && break; sleep 0.2; done

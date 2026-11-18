@@ -279,7 +279,7 @@
 
   function showResult(item, link, hasPassword) {
     const wax = $("wax");
-    wax.classList.add("sealed"); wax.classList.remove("press"); void wax.offsetWidth; wax.classList.add("press");
+    wax.classList.add("on"); wax.classList.remove("press"); void wax.offsetWidth; wax.classList.add("press");
     $("sealState").textContent = "Versiegelt"; $("sealState").classList.add("sealed");
     $("sealSub").textContent = (hasPassword ? "Mit Passwort geschützt. " : "") + "Liegt verschlüsselt bereit und funktioniert genau einmal.";
     $("outLink").textContent = link;
@@ -301,7 +301,7 @@
   function resetCompose() {
     current = null;
     $("result").classList.remove("show");
-    $("wax").classList.remove("sealed", "press");
+    $("wax").classList.remove("on", "press");
     $("sealState").textContent = "Noch leer"; $("sealState").classList.remove("sealed");
     $("sealSub").textContent = "Schreib eine Nachricht und erstelle den Link. Er funktioniert genau einmal.";
     $("secret").focus();
@@ -339,7 +339,7 @@
     });
     $("planBuy").addEventListener("click", (ev) => {
       if (cfg.buyUrl && !license()) return; // normaler Link zum Shop
-      ev.preventDefault(); $("lic").scrollIntoView({ behavior: "smooth", block: "center" }); if (!license()) $("licKey").focus();
+      ev.preventDefault(); $("lic").scrollIntoView({ behavior: "smooth", block: "center" }); if (!license()) setTimeout(() => $("licKey").focus(), 400);
     });
 
     try {
@@ -349,6 +349,16 @@
       serverOk = false;
       note($("formNote"), "Der Pro-Server antwortet gerade nicht (" + e.message + ").", "err");
     }
+    // Pro erst zeigen, wenn es auf dem Server freigeschaltet ist (oder ?preview zum Testen).
+    const preview = new URLSearchParams(location.search).has("preview");
+    const live = serverOk && (cfg.launched || preview);
+    $("app").hidden = !live;
+    $("heroSoon").hidden = live;
+    $("heroLive").hidden = !live;
+    $("heroBadge").textContent = !live ? "Bald verfügbar" : (cfg.launched ? "Jetzt verfügbar" : "Vorschau");
+    $("heroBadge").classList.toggle("ok", live);
+    if (!live) { note($("formNote"), "", ""); return; }
+
     $("secret").maxLength = cfg.maxMessageChars;
     renderTtl(); renderCount();
     $("mailWrap").style.display = cfg.mail ? "" : "none";

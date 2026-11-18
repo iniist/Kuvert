@@ -158,6 +158,7 @@ Du musst dafür nichts tun, keine Mails schreiben und keine Webhooks einrichten.
 'buy_url'     => 'https://…',             // aus B4
 'price_label' => '19 € pro Jahr',
 'manage_url'  => 'https://polar.sh/kuvert/portal',
+'pro_launched' => false,  // erst auf true, wenn alles getestet ist (vorher: pro.html?preview)
 'mail' => ['enabled' => true, 'transport' => 'smtp', 'from' => 'kuvert@kuvert.net',
            'smtp' => ['host' => 'smtp.strato.de', 'port' => 465, 'secure' => 'ssl',
                       'user' => 'kuvert@kuvert.net', 'pass' => '…']],
@@ -169,4 +170,6 @@ Du musst dafür nichts tun, keine Mails schreiben und keine Webhooks einrichten.
 5. **Prüfen**:
    - `https://kuvert.net/api/index.php?a=config` → JSON (u. a. `"mail":true`)
    - `https://kuvert.net/api/config.php` → **403**
-   - `https://kuvert.net/pro.html` → Testkauf wie in B7, Kuvert an dich selbst schicken, öffnen, Mail kommt an.
+   - `https://kuvert.net/pro.html?preview` → Testkauf wie in B7, Kuvert an dich selbst schicken, öffnen, Mail kommt an.
+6. **Live schalten**: `'pro_launched' => true` setzen und `'sandbox' => false` (mit Live-Werten von Polar).
+   Ab dann zeigt `pro.html` für alle die App statt „Bald verfügbar“. Auf der Startseite den Hinweis „bald“ entferne ich dann im Code.

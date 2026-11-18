@@ -53,6 +53,7 @@ function kv_defaults(): array
         ],
         'buy_url'     => '',
         'manage_url'  => '',
+        'pro_launched' => false,   // erst auf true, wenn Verkauf (Polar) bereit ist
         'price_label' => '',
         'mail' => [
             'enabled'   => false,
@@ -270,6 +271,11 @@ function kv_run(): void
         $result = $fn($db, $deferred);
         kv_json(200, $result);
     } catch (KvError $e) {
+        if ($e->kvCode === 'not_configured' && $action === 'config') {
+            // Noch nicht eingerichtet: Pro-Seite zeigt einfach „Bald verfügbar“.
+            kv_json(200, ['version' => 1, 'launched' => false, 'configured' => false]);
+            return;
+        }
         kv_json($e->http, ['error' => array_merge(['code' => $e->kvCode, 'message' => $e->getMessage()], $e->extra)]);
     } catch (Throwable $e) {
         error_log('[kuvert] ' . get_class($e) . ': ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
