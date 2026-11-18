@@ -1,0 +1,10 @@
+# Server-Konfiguration mit Geheimnissen – nie committen
+api/config.php
+kuvert-config.php
+# Laufzeitdaten
+api/_data/*
+!api/_data/.htaccess
+!api/_data/.gitkeep
+# Tests
+node_modules/
+tests/.tmp/

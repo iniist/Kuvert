@@ -65,10 +65,10 @@
 
   <main>
     <h1>Datenschutzerklärung</h1>
-    <p class="lead">Stand: Juni 2026</p>
+    <p class="lead">Stand: November 2026</p>
 
     <div class="highlight">
-      <p><strong>Kurz gesagt:</strong> Diese Anwendung speichert nichts. Es gibt keine Konten, keine Cookies, kein Tracking und keine Analyse-Werkzeuge. Deine Inhalte werden im Browser verarbeitet und stecken ausschließlich im Link, den du selbst teilst – sie erreichen keinen Server.</p>
+      <p><strong>Kurz gesagt:</strong> Die kostenlose Version von Kuvert speichert nichts: Deine Inhalte werden im Browser verarbeitet und stecken ausschließlich im Link, den du selbst teilst. Bei <strong>Kuvert Pro</strong> liegt deine Nachricht bis zum ersten Öffnen auf dem Server, aber nur Ende-zu-Ende verschlüsselt. Den Schlüssel kennt nur der Link, nicht der Server. Es gibt keine Konten, keine Cookies, kein Tracking und keine Analyse-Werkzeuge.</p>
     </div>
 
     <h2>1. Verantwortlicher</h2>
@@ -79,10 +79,25 @@
       <p>E-Mail: <a class="inline" href="mailto:info@iniist.com">info@iniist.com</a></p>
     </div>
 
-    <h2>2. Wie die Anwendung mit deinen Inhalten umgeht</h2>
+    <h2>2. Kostenlose Version: Wie die Anwendung mit deinen Inhalten umgeht</h2>
     <p>Kuvert verschlüsselt bzw. kodiert die von dir eingegebene Nachricht direkt in deinem Browser. Das Ergebnis wird im Adress-Fragment (dem Teil hinter <span class="muted">#</span>) des Links abgelegt. Dieses Fragment wird vom Browser technisch <strong>nicht an den Server übertragen</strong>. Es findet keine Speicherung deiner Inhalte statt – weder bei mir noch beim Hoster. Was mit dem Link geschieht, bestimmst allein du, indem du ihn weitergibst.</p>
 
-    <h2>3. Hosting</h2>
+    <h2>3. Kuvert Pro (kostenpflichtige Variante)</h2>
+    <!-- TODO vor Livegang: Abschnitt rechtlich prüfen lassen; Anschrift des Zahlungsanbieters ergänzen. -->
+    <p>Bei Kuvert Pro wird die Nachricht ebenfalls in deinem Browser verschlüsselt (AES-GCM, 256 Bit). Der Schlüssel steht nur im Adress-Fragment des Links und wird <strong>nie an den Server übertragen</strong>. Auf dem Server (bei STRATO, siehe Hosting) werden gespeichert:</p>
+    <ul>
+      <li>der verschlüsselte Inhalt (für uns nicht lesbar),</li>
+      <li>Prüfwerte (Hashes), mit denen der Server das Abholen und den Status-Link prüft,</li>
+      <li>Erstell-, Ablauf- und ggf. Öffnungszeitpunkt sowie die Zahl falscher Passwort-Eingaben,</li>
+      <li>auf Wunsch deine E-Mail-Adresse für die Benachrichtigung „Dein Kuvert wurde geöffnet“,</li>
+      <li>ein Hash deines Lizenzschlüssels (nicht der Schlüssel selbst), um Missbrauch zu begrenzen.</li>
+    </ul>
+    <p><strong>Löschung:</strong> Der verschlüsselte Inhalt und die E-Mail-Adresse werden gelöscht, sobald die Nachricht geöffnet, zurückgezogen, nach zu vielen Fehlversuchen vernichtet wird oder abläuft (spätestens nach 30 Tagen). Danach bleibt für höchstens 7 Tage nur der Zustand („geöffnet am …“) abrufbar, dann wird auch dieser Datensatz gelöscht. Die E-Mail-Adresse verwenden wir ausschließlich für diese eine Benachrichtigung.</p>
+    <p><strong>Missbrauchsschutz:</strong> Zur Begrenzung von Anfragen speichern wir kurzzeitig (höchstens 10 Minuten) einen verschlüsselten Hash deiner IP-Adresse zusammen mit einem Zähler. Die IP-Adresse selbst wird von der Anwendung nicht gespeichert.</p>
+    <p><strong>Lizenz und Bezahlung:</strong> Der Kauf einer Lizenz wird über den Zahlungsdienstleister Polar (polar.sh) abgewickelt, der als Verkäufer (Merchant of Record) auftritt. Die dafür nötigen Daten (z. B. Name, E-Mail, Zahlungsdaten) gibst du direkt bei Polar ein; es gilt dessen Datenschutzerklärung. Zur Prüfung deines Lizenzschlüssels übermittelt unser Server den Schlüssel an Polar.</p>
+    <p class="muted">Rechtsgrundlage ist die Erfüllung des Vertrags über Kuvert Pro (Art. 6 Abs. 1 lit. b DSGVO); für die E-Mail-Benachrichtigung deine Einwilligung durch Angabe der Adresse (Art. 6 Abs. 1 lit. a DSGVO); für den Missbrauchsschutz unser berechtigtes Interesse an einem sicheren Betrieb (Art. 6 Abs. 1 lit. f DSGVO).</p>
+
+    <h2>4. Hosting</h2>
     <p>Diese Website wird bei einem Dienstleister in Deutschland gehostet:</p>
     <div class="card">
       <p>STRATO GmbH</p>
@@ -91,7 +106,7 @@
     </div>
     <p class="muted">Beim Aufruf der Seite verarbeitet der Hoster automatisch technische Verbindungsdaten (siehe Server-Logfiles). Der Hoster betreibt die Server in Deutschland und ist als Auftragsverarbeiter auf Grundlage eines Auftragsverarbeitungsvertrags (Art. 28 DSGVO) tätig. Rechtsgrundlage ist das berechtigte Interesse an einem sicheren und stabilen Betrieb der Website (Art. 6 Abs. 1 lit. f DSGVO).</p>
 
-    <h2>4. Server-Logfiles</h2>
+    <h2>5. Server-Logfiles</h2>
     <p>Der Hoster erhebt und speichert automatisch Informationen in sogenannten Server-Logfiles, die dein Browser übermittelt. Dies sind in der Regel:</p>
     <ul>
       <li>IP-Adresse</li>
@@ -102,19 +117,19 @@
     </ul>
     <p class="muted">Diese Daten dienen der Auslieferung der Seite, der Stabilität und der Sicherheit (z. B. Abwehr von Angriffen). Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Die Speicherdauer richtet sich nach den Vorgaben des Hosters.</p>
 
-    <h2>5. Keine Cookies, kein Tracking</h2>
-    <p>Diese Website setzt <strong>keine Cookies</strong>, nutzt keinen lokalen Speicher (localStorage) für personenbezogene Zwecke, bindet keine Analyse- oder Werbedienste ein und verwendet keine Tracking-Technologien. Ein Cookie-Banner ist daher nicht erforderlich.</p>
+    <h2>6. Keine Cookies, kein Tracking</h2>
+    <p>Diese Website setzt <strong>keine Cookies</strong>, nutzt den lokalen Speicher deines Browsers (localStorage) nur für technisch notwendige Komfortfunktionen (gewähltes Farbschema; bei Kuvert Pro dein Lizenzschlüssel und die Liste deiner gesendeten Kuverts ohne Inhalte, die du jederzeit löschen kannst), bindet keine Analyse- oder Werbedienste ein und verwendet keine Tracking-Technologien. Ein Cookie-Banner ist daher nicht erforderlich.</p>
 
-    <h2>6. Schriften und Skripte</h2>
+    <h2>7. Schriften und Skripte</h2>
     <p>Schriftarten und die zur QR-Code-Erzeugung genutzte Programmbibliothek werden <strong>lokal vom selben Server</strong> ausgeliefert. Es werden keine Inhalte von Drittanbietern (z. B. Google Fonts oder Content Delivery Networks) nachgeladen. Es werden dadurch keine Daten an Dritte übertragen.</p>
 
-    <h2>7. Verschlüsselte Übertragung</h2>
+    <h2>8. Verschlüsselte Übertragung</h2>
     <p class="muted">Die Seite wird über eine verschlüsselte HTTPS-Verbindung (SSL/TLS) ausgeliefert.</p>
 
-    <h2>8. Deine Rechte</h2>
+    <h2>9. Deine Rechte</h2>
     <p>Dir stehen nach der DSGVO folgende Rechte zu: Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie Widerspruch gegen die Verarbeitung (Art. 21). Wende dich dazu an die oben genannte Kontaktadresse.</p>
 
-    <h2>9. Beschwerderecht</h2>
+    <h2>10. Beschwerderecht</h2>
     <p class="muted">Du hast das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig ist u. a. der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg (LfDI BW).</p>
   </main>
 

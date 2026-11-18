@@ -1,0 +1,5 @@
+# Only the router is reachable from the web. Everything else in api/ is private.
+# (Sicherheits-Header setzt api/index.php selbst.)
+<FilesMatch "^(?!index\.php$).+$">
+  Require all denied
+</FilesMatch>

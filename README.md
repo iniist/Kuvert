@@ -46,24 +46,93 @@ Du kannst das selbst prüfen: Öffne den Netzwerk-Tab deines Browsers und beobac
 ## Dateien
 
 ```
-index.html     Die komplette App (HTML, CSS, JS in einer Datei)
-qrcode.js      QR-Code-Bibliothek (lokal, MIT-Lizenz, von kazuhikoarase)
-fonts.css      @font-face-Definitionen für die lokalen Schriften
-fonts/         8 woff2-Dateien (latin, genutzte Gewichte)
+index.html        Die kostenlose App (HTML + JS), komplett ohne Server
+kuvert.css        Gemeinsames Stylesheet (index.html, pro.html)
+qrcode.js         QR-Code-Bibliothek (lokal, MIT-Lizenz, von kazuhikoarase)
+fonts.css, fonts/ Lokale Schriften
+
+pro.html          Kuvert Pro – Oberfläche
+pro.js            Kuvert Pro – Logik (Lizenz, Versenden, Empfangen, Status)
+pro-crypto.js     Kuvert Pro – Verschlüsselung (Web Crypto)
+api/              Kuvert Pro – PHP-Backend (nur api/index.php ist öffentlich)
+tests/            API- und Browser-Tests (nicht hochladen)
+```
+
+---
+
+## Kuvert Pro
+
+Die kostenpflichtige Variante mit **Selbstzerstörung nach dem Lesen** und **Lesebestätigung**.
+Die kostenlose Version bleibt unverändert serverlos.
+
+### Wie es funktioniert
+
+1. Der Browser erzeugt einen zufälligen 256-Bit-Schlüssel `K` und verschlüsselt die Nachricht (AES-GCM).
+   Mit Passwort fließt zusätzlich `PBKDF2(Passwort, 600.000 Runden)` in den Schlüssel ein.
+2. Hochgeladen werden nur der **Chiffretext** und `SHA-256(token)`. `token` wird per HKDF aus demselben
+   Material abgeleitet wie der Schlüssel.
+3. Der Link sieht so aus: `https://kuvert.net/pro.html#p1.<id>.<K>`. `K` steht hinter dem `#` und erreicht den Server nie.
+4. Beim Öffnen leitet der Empfänger-Browser aus `K` (+ Passwort) das `token` ab und legt es vor.
+   Nur wenn es stimmt, gibt der Server den Chiffretext **genau einmal** heraus und löscht ihn im selben Schritt
+   (atomares `UPDATE … WHERE state = 'waiting'`).
+5. Ein falsches Passwort lehnt der Server ab, **ohne** den Chiffretext herauszugeben. Offline-Raten ist damit unmöglich.
+   Nach 5 Fehlversuchen wird die Nachricht vernichtet.
+6. Der Absender bekommt einen **Status-Link** (`#s1.<id>.<statusToken>`) und optional eine **E-Mail**,
+   sobald geöffnet wurde. Solange die Pro-Seite offen ist, gibt es zusätzlich eine Browser-Benachrichtigung.
+7. Wer das Kuvert zuerst öffnet, gewinnt. Der eigentliche Empfänger sieht dann „Bereits geöffnet“, ein Abfangen fällt also auf.
+
+Der Server speichert: Chiffretext, Hashes, Zeiten, Fehlversuche, optional die E-Mail-Adresse und einen HMAC des
+Lizenzschlüssels. Chiffretext und E-Mail werden beim Öffnen, Ablauf oder Zurückziehen sofort gelöscht, der Rest
+nach spätestens 7 weiteren Tagen.
+
+### Lizenzen
+
+- **Eigene Schlüssel** (immer verfügbar): `php api/_cli/license.php create --label="Name" [--days=365]`
+  (auch `list`, `revoke <KEY>`, `activate <KEY>`). Braucht SSH-Zugang zum Webspace.
+- **Verkauf über [Polar](https://polar.sh)** (`license.provider = 'polar'`): Polar tritt als Verkäufer auf
+  (Merchant of Record) und kümmert sich um Umsatzsteuer und Rechnungen. Im Polar-Dashboard ein Produkt mit
+  dem Benefit „License Keys“ anlegen und `organization_id` (und optional `benefit_id`) in die Konfiguration
+  eintragen. Der Server prüft Schlüssel online und speichert das Ergebnis 24 Stunden zwischen. Fällt Polar aus,
+  gelten bekannte Schlüssel 3 Tage weiter.
+  *(Lemon Squeezy wurde bewusst nicht genommen: Der Dienst nimmt keine Neukunden mehr an und wird im März 2027 eingestellt.)*
+
+### Einrichtung auf Strato
+
+1. **Datenbank:** Im Strato-Kundenmenü eine MySQL-Datenbank anlegen (Host, DB-Name, Benutzer, Passwort notieren).
+2. **Konfiguration:** `api/config.sample.php` kopieren und ausfüllen:
+   - am besten als `kuvert-config.php` **eine Ebene über** dem Ordner, auf den die Domain zeigt (nicht per Web erreichbar),
+   - alternativ als `api/config.php` (durch `.htaccess` geschützt).
+   - `secret` setzen: `php -r 'echo bin2hex(random_bytes(32)), "\n";'`
+3. **E-Mail (optional):** Ein Postfach wie `kuvert@kuvert.net` anlegen und SMTP-Daten eintragen
+   (`smtp.strato.de`, Port 465, `ssl`). Danach `mail.enabled = true`.
+4. **Hochladen:** alles außer `tests/` (und ohne `.git`). Die Tabellen werden beim ersten Aufruf automatisch angelegt.
+5. **Prüfen:**
+   - `https://kuvert.net/api/index.php?a=config` muss JSON liefern.
+   - `https://kuvert.net/api/config.php` und `https://kuvert.net/api/_lib/bootstrap.php` müssen **403** liefern.
+6. **PHP-Version:** 8.1 oder neuer (im Strato-Menü einstellbar). Benötigt werden PDO (mysql), openssl und curl.
+7. Optional einen Cronjob für `php api/_cli/cleanup.php` einrichten. Das ist nicht nötig, weil die API nebenbei aufräumt.
+
+### Lokal entwickeln & testen
+
+```bash
+bash tests/run.sh          # startet PHP-Server mit SQLite, API-Tests (node:test) + Browser-Test (Playwright)
+bash tests/run.sh api      # nur API-Tests
+# gegen MySQL/MariaDB:
+KUVERT_TEST_DSN='mysql:host=localhost;dbname=kuvert_test;charset=utf8mb4' KUVERT_TEST_USER=… KUVERT_TEST_PASS=… bash tests/run.sh
 ```
 
 ## Deployen
 
-**Netlify (am einfachsten):** Diesen Ordner (oder das Zip) auf [app.netlify.com/drop](https://app.netlify.com/drop) ziehen. Fertig.
+Bisher werden die Dateien von Hand zu Strato hochgeladen (SFTP / Dateimanager). Die kostenlose Version ist eine
+statische Seite ohne Build-Schritt. Für Pro siehe „Einrichtung auf Strato“ oben.
 
-**Per Git/CI:** Ordner als Repo pushen und in Netlify verbinden. Es ist eine statische Seite ohne Build-Schritt — kein `netlify.toml` nötig.
-
-Die Seite nimmt automatisch die Domain, auf der sie läuft (`location.origin`), als Basis für erzeugte Links. Eine eigene Domain funktioniert also ohne Code-Änderung.
+Die Seite nimmt automatisch die Domain, auf der sie läuft (`location.origin`), als Basis für erzeugte Links.
 
 ## Technik
 
 - Vanilla HTML/CSS/JavaScript, kein Build, keine Frameworks.
-- Web Crypto API (AES-GCM, PBKDF2).
+- Web Crypto API (AES-GCM, PBKDF2, HKDF).
+- Pro: PHP 8.1+, PDO (MySQL/MariaDB oder SQLite), keine Abhängigkeiten, kein Composer.
 - qrcode-generator für QR-Codes (Canvas).
 - Fontsource für selbst gehostete Schriften.
 
