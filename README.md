@@ -123,8 +123,9 @@ KUVERT_TEST_DSN='mysql:host=localhost;dbname=kuvert_test;charset=utf8mb4' KUVERT
 
 ## Deployen
 
-Bisher werden die Dateien von Hand zu Strato hochgeladen (SFTP / Dateimanager). Die kostenlose Version ist eine
-statische Seite ohne Build-Schritt. Für Pro siehe „Einrichtung auf Strato“ oben.
+Bei jedem Push auf `main` testet GitHub Actions die API und lädt die Seite per SFTP zu Strato hoch
+(`.github/workflows/deploy.yml`, ohne `tests/`, `docs/`, README). Auf dem Server wird nichts gelöscht.
+Einrichtung Schritt für Schritt: **[docs/ANLEITUNG.md](docs/ANLEITUNG.md)** (Deployment, Polar, Pro auf Strato).
 
 Die Seite nimmt automatisch die Domain, auf der sie läuft (`location.origin`), als Basis für erzeugte Links.
 

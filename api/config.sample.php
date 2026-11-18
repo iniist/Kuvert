@@ -51,6 +51,10 @@ return [
     'buy_url'     => '',
     'price_label' => '',   // z. B. '19 € einmalig'
 
+    // Kundenportal (Abo kündigen, Rechnungen, Schlüssel ansehen). Bei Polar:
+    // 'https://polar.sh/<dein-org-slug>/portal'  (leer = kein Link)
+    'manage_url'  => '',
+
     // E-Mail-Benachrichtigung „Dein Kuvert wurde geöffnet“.
     // transport: 'smtp' (empfohlen, Strato: smtp.strato.de:465 ssl),
     //            'mail' (PHP mail()), 'log' (schreibt nur in api/_data/mail.log – zum Testen)

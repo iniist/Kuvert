@@ -357,6 +357,7 @@
       if (!license()) { $("planBuy").href = cfg.buyUrl; $("planBuy").target = "_blank"; $("planBuy").rel = "noopener"; $("planBuy").textContent = "Pro kaufen"; }
     }
     if (cfg.priceLabel) $("planPrice").textContent = cfg.priceLabel;
+    if (cfg.manageUrl) { $("manageLink").href = cfg.manageUrl; $("manageLink").style.display = ""; }
 
     if (serverOk && license()) activate(license(), true);   // still prüfen, ob die Lizenz noch gilt
     pollAll();

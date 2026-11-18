@@ -35,6 +35,7 @@ function kv_action_config(PDO $db, array &$deferred): array
     return [
         'version'         => 1,
         'buyUrl'          => (string)$c['buy_url'],
+        'manageUrl'       => (string)$c['manage_url'],
         'priceLabel'      => (string)$c['price_label'],
         'mail'            => kv_mail_enabled(),
         'maxMessageChars' => (int)$c['limits']['max_message_chars'],

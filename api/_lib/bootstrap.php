@@ -52,6 +52,7 @@ function kv_defaults(): array
             ],
         ],
         'buy_url'     => '',
+        'manage_url'  => '',
         'price_label' => '',
         'mail' => [
             'enabled'   => false,

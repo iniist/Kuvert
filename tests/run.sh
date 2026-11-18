@@ -23,6 +23,7 @@ return [
   'mail'     => ['enabled' => true, 'transport' => 'log', 'from' => 'kuvert@example.test'],
   'buy_url'  => 'https://example.test/kaufen',
   'price_label' => '19 € einmalig',
+  'manage_url'  => 'https://example.test/portal',
   'rate'     => ['license' => 1000, 'create' => 1000, 'peek' => 1000, 'read' => 1000, 'status' => 1000],
 ];
 PHP

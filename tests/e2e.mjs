@@ -40,6 +40,7 @@ try {
   await sp.fill("#licKey", LICENSE);
   await sp.click("#licBtn");
   await sp.waitForSelector("#licActive", { state: "visible" });
+  assert.ok(await sp.isVisible("#manageLink"), "Link zum Kundenportal sichtbar");
   step("Lizenz: falsch abgelehnt, richtig freigeschaltet");
 
   await sp.fill("#pass", "kekse");
