@@ -335,3 +335,7 @@ body.recipient .page,body.statusmode .page{display:none}
 .nav-cta{margin-right:4px}
 .nav-cta .cta-short{display:none}
 @media(max-width:420px){ .nav-cta .cta-long{display:none} .nav-cta .cta-short{display:inline} .nav-cta{padding:0 12px} }
+
+/* Toast: volle Breite für längere Hinweise, in der App oberhalb der Aktionsleiste */
+.toast{width:max-content;text-align:center}
+@media(max-width:860px){ body.app .toast{bottom:calc(112px + env(safe-area-inset-bottom))} }
