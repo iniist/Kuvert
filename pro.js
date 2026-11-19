@@ -363,11 +363,23 @@
     renderTtl(); renderCount();
     $("mailWrap").style.display = cfg.mail ? "" : "none";
     if (cfg.buyUrl) {
-      $("buyLink").href = cfg.buyUrl; $("buyLink").style.display = "";
-      if (!license()) { $("planBuy").href = cfg.buyUrl; $("planBuy").target = "_blank"; $("planBuy").rel = "noopener"; $("planBuy").textContent = "Pro kaufen"; }
+      $("buyLink").href = cfg.buyUrl; $("buyLink").style.display = ""; $("buyLink").removeAttribute("target");
+      if (!license()) { $("planBuy").href = cfg.buyUrl; $("planBuy").textContent = "Pro kaufen"; }
     }
     if (cfg.priceLabel) $("planPrice").textContent = cfg.priceLabel;
     if (cfg.manageUrl) { $("manageLink").href = cfg.manageUrl; $("manageLink").style.display = ""; }
+
+    // Rückkehr vom Polar-Checkout: kurz bedanken und zum Schlüsselfeld führen.
+    const params = new URLSearchParams(location.search);
+    if (params.has("checkout_id")) {
+      try { params.delete("checkout_id"); history.replaceState(null, "", location.pathname + (params.toString() ? "?" + params : "")); } catch (e) {}
+      if (!license()) {
+        note($("licNote"), "Danke für deinen Kauf! Deinen Lizenzschlüssel findest du in der Bestätigungs-E-Mail von Polar. Gib ihn hier ein.", "ok");
+        setTimeout(() => { $("lic").scrollIntoView({ behavior: "smooth", block: "center" }); $("licKey").focus({ preventScroll: true }); }, 300);
+      } else {
+        toast("Danke für deinen Kauf!");
+      }
+    }
 
     if (serverOk && license()) activate(license(), true);   // still prüfen, ob die Lizenz noch gilt
     pollAll();
