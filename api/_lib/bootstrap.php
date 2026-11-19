@@ -53,7 +53,8 @@ function kv_defaults(): array
         ],
         'buy_url'     => '',
         'manage_url'  => '',
-        'pro_launched' => false,   // erst auf true, wenn Verkauf (Polar) bereit ist
+        'pro_launched' => false,
+        'contact_email' => 'info@iniist.com',   // Empfänger für Team-Anfragen (leer = mail.from)   // erst auf true, wenn Verkauf (Polar) bereit ist
         'price_label' => '',
         'mail' => [
             'enabled'   => false,
@@ -76,6 +77,7 @@ function kv_defaults(): array
             'peek'    => 120,
             'read'    => 30,
             'status'  => 300,
+            'inquiry' => 5,
         ],
         'trust_proxy_header' => '',  // z. B. 'HTTP_X_FORWARDED_FOR', nur wenn ein vertrauenswürdiger Proxy davor sitzt
     ];

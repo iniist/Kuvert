@@ -210,3 +210,28 @@ test("Ungültige Geräte-ID wird abgewiesen", async () => {
   assert.equal(r.status, 403);
   assert.equal(r.data.error.code, "activation_invalid");
 });
+
+/* ---------------- Team-Anfragen (teams.html) ---------------- */
+test("Team-Anfrage wird per Mail verschickt, mit Reply-To", async () => {
+  const r = await call("inquiry", { name: "Anna Test", company: "Firma XY GmbH", email: "anna@firma.test", size: "6–20 Personen",
+                                    message: "Wir wollen Kuvert für Kundenzugänge nutzen.", privacy: true, website: "" });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  await new Promise((res) => setTimeout(res, 300));
+  const log = readFileSync(path.join(root, "api/_data/mail.log"), "utf8");
+  assert.match(log, /Kuvert Teams – Anfrage von Firma XY GmbH/);
+  assert.match(log, /Reply-To: anna@firma\.test/);
+  assert.match(log, /Teamgröße: +6–20 Personen/);
+});
+
+test("Team-Anfrage: Pflichtfelder, Einwilligung und Spam-Schutz", async () => {
+  const ok = { name: "A", company: "B", email: "a@b.test", size: "2–5 Personen", privacy: true };
+  assert.equal((await call("inquiry", { ...ok, email: "kaputt" })).status, 400);
+  assert.equal((await call("inquiry", { ...ok, company: "" })).status, 400);
+  assert.equal((await call("inquiry", { ...ok, privacy: false })).data.error.code, "privacy_required");
+  // Honigtopf ausgefüllt → antwortet „ok“, verschickt aber nichts
+  const before = readFileSync(path.join(root, "api/_data/mail.log"), "utf8").length;
+  assert.equal((await call("inquiry", { ...ok, company: "SPAMBOT", website: "http://spam.example" })).status, 200);
+  const after = readFileSync(path.join(root, "api/_data/mail.log"), "utf8");
+  assert.equal(after.length, before);
+  assert.doesNotMatch(after, /SPAMBOT/);
+});

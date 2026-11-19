@@ -15,7 +15,7 @@ const browser = await chromium.launch();
 const errors = [];
 const watch = (page, name) => {
   page.on("pageerror", (e) => errors.push(`${name}: ${e.message}`));
-  page.on("console", (m) => { if (m.type() === "error" && !/status of (403|409|410)/.test(m.text())) errors.push(`${name} console: ${m.text()}`); });
+  page.on("console", (m) => { if (m.type() === "error" && !/status of (400|403|409|410)/.test(m.text())) errors.push(`${name} console: ${m.text()}`); });
 };
 const step = (s) => console.log("✓", s);
 
@@ -190,6 +190,46 @@ try {
   await pb.click("#licBtn");
   await pb.waitForSelector("#licActive", { state: "visible" });
   step("Gerätelimit: zweites Gerät abgelehnt, nach Freigabe auf Gerät A frei");
+
+  /* ---------- Mobiles Menü und Preiskarten ---------- */
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ph = await phone.newPage(); watch(ph, "handy");
+  await ph.goto(BASE + "/index.html");
+  assert.equal(await ph.isVisible("#nav a.nl"), false, "Textlinks auf dem Handy versteckt");
+  await ph.click(".menu-btn");
+  await ph.waitForSelector("#mobileMenu", { state: "visible" });
+  const items = await ph.$$eval("#mobileMenu a", (as) => as.map((a) => a.textContent));
+  assert.deepEqual(items, ["So geht's", "Preise", "Pro", "FAQ", "Quelltext auf GitHub"]);
+  await ph.screenshot({ path: path.join(OUT, "11-menu.png") });
+  await ph.click("#mobileMenu a[href='#varianten']");
+  await ph.waitForSelector("#mobileMenu", { state: "hidden" });
+  assert.equal(await ph.$$eval(".plans .plan", (p) => p.length), 3);
+  assert.match(await ph.textContent("#teams"), /Auf Anfrage/);
+  assert.match(await ph.textContent(".plan.pro .price"), /inkl\. MwSt\./);
+  assert.equal(await ph.$$eval(".pill-tag", (p) => p.length), 0, "kein „Neu“ mehr");
+  await ph.keyboard.press("Escape");
+  const dk = await sender.newPage(); watch(dk, "desktop-nav");
+  await dk.goto(BASE + "/index.html");
+  assert.equal(await dk.isVisible(".menu-btn"), false, "Menü-Knopf nur auf dem Handy");
+  step("Handy-Menü, drei Preiskarten, MwSt.-Hinweis, kein „Neu“");
+
+  /* ---------- Teams-Anfrage ---------- */
+  const tp = await rcv.newPage(); watch(tp, "teams");
+  await tp.goto(BASE + "/index.html#teams");
+  await tp.click("#teams a.btn");
+  await tp.waitForURL(/teams\.html$/);
+  await tp.click("#tSubmit");
+  await tp.waitForFunction(() => /Namen/.test(document.getElementById("tNote").textContent));
+  await tp.fill("#tName", "Max Muster"); await tp.fill("#tCompany", "Muster AG");
+  await tp.fill("#tEmail", "max@muster.test"); await tp.selectOption("#tSize", { index: 2 });
+  await tp.fill("#tMessage", "Hallo!");
+  await tp.click("#tSubmit");
+  await tp.waitForFunction(() => /zustimmen/.test(document.getElementById("tNote").textContent));
+  await tp.check("#tPrivacy"); await tp.click("#tSubmit");
+  await tp.waitForSelector("#tDone", { state: "visible" });
+  assert.equal(await tp.textContent("#tDoneMail"), "max@muster.test");
+  await tp.screenshot({ path: path.join(OUT, "12-teams-done.png") });
+  step("Teams: Formular prüft Pflichtfelder, sendet, zeigt Danke");
 
   const mob = await browser.newContext({ viewport: { width: 375, height: 800 } });
   const mp = await mob.newPage(); watch(mp, "mobile");

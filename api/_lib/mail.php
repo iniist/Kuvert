@@ -40,7 +40,7 @@ function kv_notify_event(string $to, string $event, string $id, int $when): void
     kv_mail_send($to, $subject, $body);
 }
 
-function kv_mail_send(string $to, string $subject, string $body): void
+function kv_mail_send(string $to, string $subject, string $body, string $replyTo = ''): void
 {
     $m = kv_config()['mail'];
     if (!filter_var($to, FILTER_VALIDATE_EMAIL) || preg_match('/[\r\n]/', $to)) {
@@ -62,10 +62,13 @@ function kv_mail_send(string $to, string $subject, string $body): void
         'Content-Transfer-Encoding: base64',
         'Auto-Submitted: auto-generated',
     ];
+    if ($replyTo !== '' && filter_var($replyTo, FILTER_VALIDATE_EMAIL) && !preg_match('/[\r\n]/', $replyTo)) {
+        $headers[] = "Reply-To: <{$replyTo}>";
+    }
     $encodedBody = rtrim(chunk_split(base64_encode($body), 76, "\r\n"));
 
     if ($transport === 'log') {
-        $line = date('c') . "\tTo: {$to}\tSubject: {$subject}\n" . $body . "\n---\n";
+        $line = date('c') . "\tTo: {$to}\tSubject: {$subject}" . ($replyTo !== '' ? "\tReply-To: {$replyTo}" : '') . "\n" . $body . "\n---\n";
         file_put_contents(dirname(__DIR__) . '/_data/mail.log', $line, FILE_APPEND | LOCK_EX);
         return;
     }

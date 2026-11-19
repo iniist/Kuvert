@@ -59,6 +59,9 @@ return [
     // Zum Testen vorher trotzdem nutzbar über:  https://kuvert.net/pro.html?preview
     'pro_launched' => false,
 
+    // Empfänger für Team-Anfragen aus dem Formular auf teams.html (Standard: info@iniist.com).
+    'contact_email' => 'info@iniist.com',
+
     // E-Mail-Benachrichtigung „Dein Kuvert wurde geöffnet“.
     // transport: 'smtp' (empfohlen, Strato: smtp.strato.de:465 ssl),
     //            'mail' (PHP mail()), 'log' (schreibt nur in api/_data/mail.log – zum Testen)

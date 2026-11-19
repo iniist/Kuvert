@@ -20,6 +20,41 @@
     sync();
   });
 
+  /* Mobiles Menü: übernimmt die Links aus der Navigation, sichtbar unter 720 px */
+  var navLinks = document.querySelector(".nav-links");
+  var navBar = document.getElementById("nav");
+  if (navLinks && navBar) {
+    var links = Array.prototype.slice.call(navLinks.querySelectorAll("a.nl, a.icon-btn[href]"));
+    if (links.length) {
+      var menu = document.createElement("div");
+      menu.className = "mobile-menu"; menu.id = "mobileMenu"; menu.hidden = true;
+      links.forEach(function (a) {
+        var item = document.createElement("a");
+        item.href = a.getAttribute("href");
+        if (a.target) { item.target = a.target; item.rel = a.rel; }
+        var label = (a.textContent || "").replace(/\s+/g, " ").trim() || a.getAttribute("aria-label") || "";
+        item.textContent = /GitHub/i.test(a.getAttribute("aria-label") || "") ? "Quelltext auf GitHub" : label;
+        menu.appendChild(item);
+      });
+      navBar.appendChild(menu);
+      var MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+      var CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+      var mb = document.createElement("button");
+      mb.type = "button"; mb.className = "icon-btn menu-btn"; mb.innerHTML = MENU;
+      mb.setAttribute("aria-label", "Menü öffnen"); mb.setAttribute("aria-expanded", "false"); mb.setAttribute("aria-controls", "mobileMenu");
+      navLinks.appendChild(mb);
+      var setOpen = function (open) {
+        menu.hidden = !open; mb.innerHTML = open ? CLOSE : MENU;
+        mb.setAttribute("aria-expanded", String(open)); mb.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+      };
+      mb.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden); });
+      menu.addEventListener("click", function (e) { if (e.target.closest("a")) setOpen(false); });
+      document.addEventListener("click", function (e) { if (!menu.hidden && !navBar.contains(e.target)) setOpen(false); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { setOpen(false); mb.focus(); } });
+      window.addEventListener("resize", function () { if (window.innerWidth > 720 && !menu.hidden) setOpen(false); });
+    }
+  }
+
   var nav = document.getElementById("nav");
   if (nav) {
     var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > 8); };

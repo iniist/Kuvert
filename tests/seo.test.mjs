@@ -9,7 +9,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (f) => readFileSync(path.join(root, f), "utf8");
 const strip = (s) => s.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 const PAGES = { "index.html": "https://kuvert.net/", "pro.html": "https://kuvert.net/pro.html",
-                "impressum.html": "https://kuvert.net/impressum.html", "datenschutz.html": "https://kuvert.net/datenschutz.html" };
+                "teams.html": "https://kuvert.net/teams.html", "impressum.html": "https://kuvert.net/impressum.html", "datenschutz.html": "https://kuvert.net/datenschutz.html" };
 
 for (const [file, url] of Object.entries(PAGES)) {
   test(`${file}: Titel, Beschreibung, Canonical`, () => {
