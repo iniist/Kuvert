@@ -27,6 +27,7 @@ try {
   await ap.goto(BASE + "/app");
   await ap.waitForFunction(() => document.querySelector('.mode button[data-mode="free"]').getAttribute("aria-checked") === "true");
   assert.ok(await ap.isVisible("#resultEmpty"), "leerer Ergebnisbereich am Desktop");
+  assert.equal(await ap.$$eval(".app-foot a[href='./impressum.html'], .app-foot a[href='./datenschutz.html']", (l) => l.length), 2, "Impressum/Datenschutz erreichbar");
   await ap.click("#sealBtn");
   await ap.waitForSelector("#formNote.err");
   await ap.fill("#msg", "WLAN: Kekse123");
