@@ -6,19 +6,24 @@
   var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 
   var btn = document.getElementById("themeToggle");
+  var menuTheme = null;   // Umschalter unten im mobilen Menü
   function sync() {
     var dark = root.getAttribute("data-theme") === "dark";
     if (btn) { btn.innerHTML = dark ? SUN : MOON; btn.setAttribute("aria-label", dark ? "Helles Farbschema" : "Dunkles Farbschema"); }
+    if (menuTheme) {
+      menuTheme.setAttribute("aria-checked", String(dark));
+    }
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", dark ? "#09090b" : "#f6f5f2");
   }
-  sync();
-  if (btn) btn.addEventListener("click", function () {
+  function toggleTheme() {
     var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
     root.setAttribute("data-theme", next);
     try { localStorage.setItem("kuvert-theme", next); } catch (e) {}
     sync();
-  });
+  }
+  sync();
+  if (btn) btn.addEventListener("click", toggleTheme);
 
   /* Mobiles Menü: übernimmt die Links aus der Navigation, sichtbar unter 720 px */
   var navLinks = document.querySelector(".nav-links");
@@ -36,6 +41,16 @@
         item.textContent = /GitHub/i.test(a.getAttribute("aria-label") || "") ? "Quelltext auf GitHub" : label;
         menu.appendChild(item);
       });
+      if (btn) {
+        menuTheme = document.createElement("button");
+        menuTheme.type = "button"; menuTheme.className = "menu-theme"; menuTheme.setAttribute("role", "switch");
+        menuTheme.setAttribute("aria-label", "Dunkles Design");
+        menuTheme.innerHTML = '<span class="mt-icon" aria-hidden="true">' + MOON + '</span><span class="mt-label">Dunkles Design</span><span class="mt-switch" aria-hidden="true"><span></span></span>';
+        menuTheme.addEventListener("click", function (e) { e.stopPropagation(); toggleTheme(); });
+        menu.appendChild(menuTheme);
+        document.body.classList.add("has-menu-theme");
+        sync();
+      }
       navBar.appendChild(menu);
       var MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
       var CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
