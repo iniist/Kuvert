@@ -3,7 +3,8 @@
  * API-Aktionen. Aufruf: api/index.php?a=<aktion>
  *
  *   GET  config   öffentliche Einstellungen für die Pro-Seite
- *   POST license  {key}                                        Lizenz prüfen
+ *   POST license  {key, activationId?, label?}                 Lizenz prüfen bzw. Gerät freischalten
+ *   POST deactivate {key, activationId}                         Gerät wieder freigeben
  *   POST create   {ciphertext, authHash, statusHash, hasPassword, ttl, notifyEmail?}  + Header X-Kuvert-License
  *   POST peek     {id}                                         Zustand für Empfänger (ohne zu öffnen)
  *   POST read     {id, token}                                  einmal abholen → danach gelöscht
@@ -20,6 +21,7 @@ function kv_routes(): array
     return [
         'config'  => ['GET',  'kv_action_config'],
         'license' => ['POST', 'kv_action_license'],
+        'deactivate' => ['POST', 'kv_action_deactivate'],
         'create'  => ['POST', 'kv_action_create'],
         'peek'    => ['POST', 'kv_action_peek'],
         'read'    => ['POST', 'kv_action_read'],
@@ -51,8 +53,24 @@ function kv_action_license(PDO $db, array &$deferred): array
 {
     kv_rate_limit($db, 'license');
     $body = kv_body(2048);
-    $lic = kv_license_check($db, kv_str($body, 'key', 256));
-    return ['valid' => true, 'display' => $lic['display'], 'validUntil' => $lic['valid_until']];
+    $key = kv_str($body, 'key', 256);
+    $activationId = kv_str($body, 'activationId', 64);
+    if ($activationId !== '') {
+        // Bereits freigeschaltetes Gerät: nur prüfen.
+        $lic = kv_license_check($db, $key, $activationId);
+        return ['valid' => true, 'display' => $lic['display'], 'validUntil' => $lic['valid_until'], 'activationId' => $activationId];
+    }
+    $act = kv_license_activate($db, $key, kv_str($body, 'label', 200));
+    return ['valid' => true, 'display' => $act['display'], 'validUntil' => $act['valid_until'], 'activationId' => $act['activation_id']];
+}
+
+/** @return array<string,mixed> */
+function kv_action_deactivate(PDO $db, array &$deferred): array
+{
+    kv_rate_limit($db, 'license');
+    $body = kv_body(2048);
+    kv_license_deactivate($db, kv_str($body, 'key', 256), kv_str($body, 'activationId', 64));
+    return ['ok' => true];
 }
 
 /** @return array<string,mixed> */
@@ -67,7 +85,7 @@ function kv_action_create(PDO $db, array &$deferred): array
     if ($licKey === '') {
         throw new KvError(402, 'license_required', 'Für Kuvert Pro wird ein Lizenzschlüssel benötigt.');
     }
-    $lic = kv_license_check($db, $licKey);
+    $lic = kv_license_check($db, $licKey, (string)($_SERVER['HTTP_X_KUVERT_ACTIVATION'] ?? '') ?: null);
 
     $ct = kv_str($body, 'ciphertext', $maxCt);
     $bin = kv_b64url_decode($ct);

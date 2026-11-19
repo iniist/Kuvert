@@ -18,7 +18,7 @@
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
     del(k) { try { localStorage.removeItem(k); } catch (e) {} },
   };
-  const LS_LICENSE = "kuvert-pro-license", LS_LICENSE_DISPLAY = "kuvert-pro-license-display",
+  const LS_LICENSE = "kuvert-pro-license", LS_LICENSE_DISPLAY = "kuvert-pro-license-display", LS_ACTIVATION = "kuvert-pro-activation",
         LS_SENT = "kuvert-pro-sent", LS_NOTIFY = "kuvert-pro-browser-notify";
 
   function fmt(ts) {
@@ -37,7 +37,11 @@
   async function api(action, body, license) {
     const opts = { method: body ? "POST" : "GET", headers: { Accept: "application/json" }, cache: "no-store", credentials: "omit" };
     if (body) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
-    if (license) opts.headers["X-Kuvert-License"] = license;
+    if (license) {
+      opts.headers["X-Kuvert-License"] = license;
+      const act = store.get(LS_ACTIVATION);
+      if (act) opts.headers["X-Kuvert-Activation"] = act;
+    }
     let res, data = null;
     try {
       res = await fetch(API + "?a=" + encodeURIComponent(action), opts);
@@ -214,18 +218,46 @@
     $("licDisplay").textContent = store.get(LS_LICENSE_DISPLAY) || "";
   }
 
-  async function activate(key, quiet) {
+  /* Gerätename für die Geräteliste im Polar-Kundenportal, z. B. „Chrome auf macOS (19.11.2026)“ */
+  function deviceLabel() {
+    const ua = navigator.userAgent;
+    const browser = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "Browser";
+    const os = /iPhone|iPad/.test(ua) ? "iOS" : /Android/.test(ua) ? "Android" : /Mac OS X/.test(ua) ? "macOS" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "";
+    return browser + (os ? " auf " + os : "") + " (" + new Date().toLocaleDateString("de-DE") + ")";
+  }
+  function forgetLicense() {
+    store.del(LS_LICENSE); store.del(LS_LICENSE_DISPLAY); store.del(LS_ACTIVATION); renderLicense();
+  }
+
+  /* Schaltet den Schlüssel auf diesem Gerät frei (oder prüft ein schon freigeschaltetes Gerät).
+     Max. 3 Geräte pro Schlüssel – das zählt Polar. */
+  async function activate(key, quiet, retried) {
     const btn = $("licBtn");
-    if (!quiet) { btn.disabled = true; note($("licNote"), "Prüfe…", ""); }
+    if (!quiet) { btn.disabled = true; note($("licNote"), "Prüfe …", ""); }
+    const known = key === license() ? store.get(LS_ACTIVATION) : null;
     try {
-      const r = await api("license", { key });
+      const r = await api("license", known ? { key, activationId: known } : { key, label: deviceLabel() });
       store.set(LS_LICENSE, key); store.set(LS_LICENSE_DISPLAY, r.display || "");
+      if (r.activationId) store.set(LS_ACTIVATION, r.activationId); else store.del(LS_ACTIVATION);
       if (!quiet) note($("licNote"), r.validUntil ? "Freigeschaltet, gültig bis " + fmt(r.validUntil) + "." : "Freigeschaltet. Viel Spaß mit Pro!", "ok");
       renderLicense();
       return true;
     } catch (e) {
-      if (e.status === 403) {
-        store.del(LS_LICENSE); store.del(LS_LICENSE_DISPLAY); renderLicense();
+      if ((e.code === "activation_invalid" || e.code === "activation_required") && !retried) {
+        // Gerät wurde z. B. im Kundenportal freigegeben → einmal neu anmelden.
+        store.del(LS_ACTIVATION);
+        return activate(key, quiet, true);
+      }
+      if (e.code === "device_limit") {
+        forgetLicense();
+        note($("licNote"), e.message, "err");
+        if (e.data && e.data.manageUrl) {
+          const a = document.createElement("a");
+          a.className = "link"; a.href = e.data.manageUrl; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Kundenportal öffnen →";
+          $("licNote").append(" ", a);
+        }
+      } else if (e.status === 403) {
+        forgetLicense();
         note($("licNote"), quiet ? "Dein gespeicherter Lizenzschlüssel gilt nicht mehr: " + e.message : e.message, "err");
       } else if (!quiet) {
         note($("licNote"), e.message, "err");
@@ -258,10 +290,18 @@
     try {
       const sealed = await C.seal(text, pass);
       setSending(true, "Lade hoch…");
-      const res = await api("create", {
+      const payload = {
         ciphertext: sealed.ciphertext, authHash: sealed.authHash, statusHash: sealed.statusHash,
         hasPassword: sealed.hasPassword, ttl: Number($("ttl").value), notifyEmail: email,
-      }, license());
+      };
+      let res;
+      try { res = await api("create", payload, license()); }
+      catch (e) {
+        if (e.code !== "activation_required" && e.code !== "activation_invalid") throw e;
+        store.del(LS_ACTIVATION);
+        if (!(await activate(license(), true))) throw Object.assign(new Error($("licNote").textContent || e.message), { status: 403 });
+        res = await api("create", payload, license());
+      }
       const item = { id: res.id, st: sealed.statusToken, c: res.createdAt, e: res.expiresAt, n: !!res.notify, s: "waiting" };
       upsertSent(item);
       current = item;
@@ -270,7 +310,7 @@
       renderSent();
     } catch (e) {
       if (e.status === 403 && /^license_/.test(e.code || "")) {
-        store.del(LS_LICENSE); store.del(LS_LICENSE_DISPLAY); renderLicense();
+        forgetLicense();
         note($("licNote"), e.message, "err");
       }
       note(form, e.message === "subtle-unavailable" ? "Verschlüsselung im Browser nicht verfügbar." : e.message, "err");
@@ -320,8 +360,12 @@
       if (!k) { note($("licNote"), "Bitte einen Lizenzschlüssel eingeben.", "err"); return; }
       activate(k, false).then((ok) => { if (ok) $("licKey").value = ""; });
     });
-    $("licRemove").addEventListener("click", () => {
-      store.del(LS_LICENSE); store.del(LS_LICENSE_DISPLAY); renderLicense(); note($("licNote"), "", "");
+    $("licRemove").addEventListener("click", async () => {
+      const key = license(), act = store.get(LS_ACTIVATION);
+      forgetLicense(); note($("licNote"), "", "");
+      if (key && act) {
+        try { await api("deactivate", { key, activationId: act }); toast("Gerät freigegeben. Du kannst den Schlüssel jetzt woanders nutzen."); } catch (e) {}
+      }
     });
     nb.addEventListener("change", async () => {
       if (!nb.checked) { store.set(LS_NOTIFY, "0"); return; }

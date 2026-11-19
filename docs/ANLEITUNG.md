@@ -110,7 +110,9 @@ Sandbox und Live sind getrennte Welten mit eigenen IDs. Die Schritte sind identi
    - **Prefix**: `KUVERT` (optional, sieht schöner aus)
    - **Expiration**: leer lassen. Bei Abos endet der Schlüssel automatisch mit dem Abo.
      Bei einmaligem Kauf kannst du hier z. B. „1 Jahr“ setzen, wenn er nicht ewig gelten soll.
-   - **Activation limit** und **Usage limit**: leer lassen (Kuvert nutzt beides nicht).
+   - **Limit Activations**: **an, 3**. Das ist die Gerätebegrenzung: Ein Schlüssel läuft auf höchstens 3 Browsern.
+     Falls angeboten, auch erlauben, dass Kunden Geräte im Kundenportal selbst freigeben.
+   - **Limit Usage**: aus.
 3. Speichern. Die **Benefit-ID** (UUID) aus der Benefit-Detailseite bzw. der Adresszeile kopieren → `benefit_id`.
 
 ### B3. Produkt
@@ -200,9 +202,11 @@ Du musst dafür nichts tun, keine Mails schreiben und keine Webhooks einrichten.
    - Testprodukt „Kuvert Pro Test“ und dessen Checkout-Link **archivieren**.
    - Rabattcode `KUVERTTEST` deaktivieren oder auf 0 verbleibende Einlösungen setzen.
    - Den beim Test erzeugten Lizenzschlüssel kannst du für dich behalten; nicht weitergeben (er läuft nie ab).
-3. In `htdocs/kuvert-config.php`: `'pro_launched' => true` setzen und hochladen.
+3. In Polar beim Benefit „Kuvert Pro Lizenzschlüssel“ **Limit Activations = 3** einschalten (Gerätebegrenzung).
+4. Den vorbereiteten Pull Request „Pro starten“ **mergen** (Entwurf vorher mit „Ready for review“ freigeben).
+   Er bringt die Gerätebegrenzung und entfernt die „bald“-Hinweise auf der Startseite. Das Deployment läuft
+   automatisch; unter Actions auf den grünen Haken warten (ca. 1 Minute).
+5. Erst danach in `htdocs/kuvert-config.php`: `'pro_launched' => true` setzen und hochladen.
    Ab sofort zeigt `pro.html` die App für alle (ohne `?preview`).
-4. Den vorbereiteten Pull Request „Pro starten“ mergen. Er entfernt die „bald“-Hinweise auf der Startseite
-   und zeigt dort die Preise. Das Deployment läuft automatisch.
-5. Kurz prüfen: kuvert.net (kein „bald“ mehr), kuvert.net/pro.html (App sichtbar, „Jetzt verfügbar“).
+6. Kurz prüfen: kuvert.net (kein „bald“ mehr), kuvert.net/pro.html (App sichtbar, „Jetzt verfügbar“).
 

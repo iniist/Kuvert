@@ -142,3 +142,71 @@ test("Eingaben werden geprüft", async () => {
   const big = "A".repeat(200000);
   assert.equal((await call("create", { ...base, ciphertext: big }, H)).status, 413);
 });
+
+/* ---------------- Gerätebegrenzung (Polar-Nachbau in tests/polar-mock.php) ---------------- */
+const activate = (key, label = "Testgerät") => call("license", { key, label });
+async function createWith(key, activationId) {
+  const s = await C.seal("geräte-test", "");
+  const headers = { "X-Kuvert-License": key };
+  if (activationId) headers["X-Kuvert-Activation"] = activationId;
+  return call("create", { ciphertext: s.ciphertext, authHash: s.authHash, statusHash: s.statusHash, ttl: 3600 }, headers);
+}
+
+test("Gerätelimit 3: drei Geräte ok, viertes abgelehnt, nach Freigabe wieder frei", async () => {
+  const key = "KUVERT-LIMIT-0003";
+  const ids = [];
+  for (let i = 0; i < 3; i++) {
+    const r = await activate(key, "Gerät " + i);
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    assert.match(r.data.activationId, /^[0-9a-f-]{36}$/);
+    ids.push(r.data.activationId);
+  }
+  const fourth = await activate(key, "Gerät 4");
+  assert.equal(fourth.status, 409);
+  assert.equal(fourth.data.error.code, "device_limit");
+  assert.equal(fourth.data.error.limit, 3);
+
+  // Bekanntes Gerät: prüfen statt neu aktivieren
+  const again = await call("license", { key, activationId: ids[0] });
+  assert.equal(again.status, 200);
+  assert.equal(again.data.activationId, ids[0]);
+
+  // Versenden mit Gerät klappt, ohne Gerät nicht
+  assert.equal((await createWith(key, ids[1])).status, 200);
+  const without = await createWith(key, null);
+  assert.equal(without.status, 403);
+  assert.equal(without.data.error.code, "activation_required");
+
+  // Ein Gerät freigeben → viertes Gerät passt jetzt
+  assert.equal((await call("deactivate", { key, activationId: ids[2] })).status, 200);
+  assert.equal((await activate(key, "Gerät 4")).status, 200);
+  // Das freigegebene Gerät gilt nicht mehr
+  const gone = await createWith(key, ids[2]);
+  assert.equal(gone.status, 403);
+  assert.equal(gone.data.error.code, "activation_invalid");
+});
+
+test("Schlüssel ohne Gerätelimit funktioniert ohne Aktivierung", async () => {
+  const r = await activate("KUVERT-NOLIM-0000");
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.activationId, null);
+  assert.equal((await createWith("KUVERT-NOLIM-0000", null)).status, 200);
+});
+
+test("Fremder Benefit und unbekannte Schlüssel werden abgelehnt", async () => {
+  const other = await activate("KUVERT-OTHER-BENE");
+  assert.equal(other.status, 403);
+  assert.equal(other.data.error.code, "license_invalid");
+  const unknown = await activate("KUVERT-GIBTS-NICHT");
+  assert.equal(unknown.status, 403);
+  // Der fremde Schlüssel darf dabei keinen Gerätplatz belegt haben
+  const st = JSON.parse(readFileSync(path.join(root, "tests/.tmp/polar-state.json"), "utf8"));
+  assert.equal(Object.keys(st["KUVERT-OTHER-BENE"] || {}).length, 0);
+});
+
+test("Ungültige Geräte-ID wird abgewiesen", async () => {
+  assert.equal((await call("license", { key: "KUVERT-LIMIT-0003", activationId: "nope" })).status, 400);
+  const r = await call("license", { key: "KUVERT-LIMIT-0003", activationId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" });
+  assert.equal(r.status, 403);
+  assert.equal(r.data.error.code, "activation_invalid");
+});
