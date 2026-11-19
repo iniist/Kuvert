@@ -13,7 +13,7 @@
   const canShare = typeof navigator.share === "function";
 
   let cfg = { launched: false, buyUrl: "", manageUrl: "", mail: false, maxMessageChars: 20000, ttlOptions: [3600, 86400, 604800, 2592000], defaultTtl: 86400 };
-  let proAvailable = false, mode = "free", busy = false, current = null, lastLink = "", lastPw = "";
+  let proAvailable = false, mode = "free", busy = false, current = null, lastLink = "", lastPw = "", lastPro = false;
 
   const IC_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   const note = (msg, kind) => P.note($("formNote"), msg, kind);
@@ -136,7 +136,7 @@
   }
 
   function showResult(link, pw, isPro) {
-    lastLink = link; lastPw = pw;
+    lastLink = link; lastPw = pw; lastPro = isPro;
     $("resultEmpty").hidden = true; $("resultFull").hidden = false;
     $("outLink").textContent = link;
     $("linkLen").textContent = link.length.toLocaleString("de-DE") + " Zeichen";
@@ -219,8 +219,25 @@
     } finally { polling = false; }
   }
 
+  /* ---------------- Installieren (Startbildschirm) ---------------- */
+  function initInstall() {
+    const btn = $("installBtn");
+    const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    if (standalone) return;
+    let deferred = null;
+    window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferred = e; btn.hidden = false; });
+    window.addEventListener("appinstalled", () => { btn.hidden = true; P.toast("Kuvert ist installiert."); });
+    const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (iOS) btn.hidden = false;
+    btn.addEventListener("click", async () => {
+      if (deferred) { deferred.prompt(); try { await deferred.userChoice; } catch (e) {} deferred = null; btn.hidden = true; return; }
+      if (iOS) P.toast("In Safari: unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“.", 7000);
+    });
+  }
+
   /* ---------------- Start ---------------- */
   async function init() {
+    initInstall();
     // Bedienelemente
     document.querySelectorAll(".mode button").forEach((b) => b.addEventListener("click", () => {
       if (b.dataset.mode === "pro" && !proAvailable) { P.toast("Kuvert Pro ist gerade nicht verfügbar."); return; }
@@ -233,7 +250,10 @@
     $("sealBtn").addEventListener("click", seal);
     $("copyBtn").addEventListener("click", async () => { if (await P.copy(lastLink)) { markCopied(); P.toast(lastPw ? "Link kopiert. Passwort separat schicken!" : "Link kopiert"); } });
     $("shareBtn").addEventListener("click", async () => {
-      try { await navigator.share({ title: "Kuvert", text: "Ich habe dir ein Kuvert geschickt:", url: lastLink }); }
+      const text = lastPro
+        ? "Ich habe dir ein Einmal-Kuvert geschickt. Es lässt sich nur einmal öffnen" + (lastPw ? ", das Passwort bekommst du separat." : ".")
+        : (lastPw ? "Ich habe dir ein verschlüsseltes Kuvert geschickt. Das Passwort bekommst du separat." : "Ich habe dir ein Kuvert geschickt.");
+      try { await navigator.share({ title: "Kuvert", text, url: lastLink }); }
       catch (e) { if (e && e.name !== "AbortError") { if (await P.copy(lastLink)) P.toast("Link kopiert"); } }
     });
     $("qrBtn").addEventListener("click", () => {

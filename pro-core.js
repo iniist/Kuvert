@@ -55,10 +55,10 @@
     }
   }
   let toastTimer = null;
-  function toast(msg) {
+  function toast(msg, ms) {
     const t = document.getElementById("toast"); if (!t) return;
     t.textContent = msg; t.classList.add("show");
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms || 3200);
   }
   function note(el, msg, kind) { el.textContent = msg || ""; el.className = el.className.replace(/\s*\b(ok|err)\b/g, "") + (kind ? " " + kind : ""); }
 

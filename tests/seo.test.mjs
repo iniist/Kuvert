@@ -9,7 +9,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (f) => readFileSync(path.join(root, f), "utf8");
 const strip = (s) => s.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 const PAGES = { "index.html": "https://kuvert.net/", "pro.html": "https://kuvert.net/pro.html",
-                "app.html": "https://kuvert.net/app", "teams.html": "https://kuvert.net/teams.html", "impressum.html": "https://kuvert.net/impressum.html", "datenschutz.html": "https://kuvert.net/datenschutz.html" };
+                "app.html": "https://kuvert.net/app", "teams.html": "https://kuvert.net/teams.html", "nutzungsbedingungen.html": "https://kuvert.net/nutzungsbedingungen.html", "impressum.html": "https://kuvert.net/impressum.html", "datenschutz.html": "https://kuvert.net/datenschutz.html" };
 
 for (const [file, url] of Object.entries(PAGES)) {
   test(`${file}: Titel, Beschreibung, Canonical`, () => {
@@ -48,3 +48,14 @@ test("robots.txt, sitemap.xml, llms.txt", () => {
   assert.ok(llms.includes("https://kuvert.net/pro.html"));
   assert.ok(existsSync(path.join(root, "404.html")));
 });
+
+test("Web-App-Manifest und Icons", () => {
+  const m = JSON.parse(read("manifest.webmanifest"));
+  assert.equal(m.start_url, "/app");
+  assert.equal(m.display, "standalone");
+  for (const icon of m.icons) assert.ok(existsSync(path.join(root, icon.src.replace(/^\//, ""))), icon.src);
+  assert.ok(m.icons.some((i) => i.purpose === "maskable"));
+  for (const file of Object.keys(PAGES)) assert.match(read(file), /<link rel="manifest" href="\/manifest\.webmanifest">/, file);
+  assert.ok(existsSync(path.join(root, "sw.js")));
+});
+

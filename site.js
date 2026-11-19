@@ -55,6 +55,11 @@
     }
   }
 
+  // Service Worker (installierbare App, Offline-Fallback für /app)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js").catch(function () {}); });
+  }
+
   var nav = document.getElementById("nav");
   if (nav) {
     var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > 8); };

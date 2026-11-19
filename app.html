@@ -15,6 +15,9 @@
 <meta property="og:image" content="https://kuvert.net/og-image.png">
 <meta name="theme-color" content="#09090b">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Kuvert">
 <script>(function(){try{var s=localStorage.getItem("kuvert-theme");document.documentElement.setAttribute("data-theme",s||"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <link rel="preload" href="./fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./fonts.css">
@@ -26,6 +29,7 @@
   .app-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
   .app-head h1{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.035em;line-height:1.05;font-weight:630}
   .app-head h1 .serif{color:var(--accent)}
+  .head-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .lic-chip{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--text-2);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;background:var(--bg-2)}
   .lic-chip .sdot{width:8px;height:8px;border-radius:50%;background:var(--text-3)}
   .lic-chip.on{border-color:color-mix(in srgb,var(--ok) 45%,var(--line-2))}
@@ -97,6 +101,7 @@
   .lic-on{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--text-2)}
   .lic-on b{color:var(--ok);font-weight:600}
   #licNote:empty{display:none}
+  .lic-terms{font-size:12.5px;color:var(--text-3);margin-top:10px}
 
   /* Deine Kuverts */
   .sent{margin-top:20px;padding:clamp(18px,2.4vw,24px)}
@@ -177,7 +182,10 @@
 <main class="wrap app-main">
   <div class="app-head">
     <h1>Neues <span class="serif">Kuvert</span></h1>
+    <div class="head-right">
+    <button class="btn btn-ghost btn-sm" id="installBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>App installieren</button>
     <span class="lic-chip" id="licChip"><span class="sdot"></span><span id="licChipText">Kostenlos</span></span>
+    </div>
   </div>
 
   <div class="app-grid">
@@ -292,6 +300,7 @@
           <div class="links"><a class="link" id="buyLink" href="./pro.html">Pro holen →</a><a class="link" href="./teams.html">Für Teams</a></div>
         </div>
         <p class="note" id="licNote"></p>
+        <p class="lic-terms">Mit der Freischaltung gelten die <a class="link" href="./nutzungsbedingungen.html">Nutzungsbedingungen</a>.</p>
       </section>
     </aside>
   </div>
@@ -307,6 +316,7 @@
   <div class="wrap">
     <a href="./impressum.html">Impressum</a>
     <a href="./datenschutz.html">Datenschutz</a>
+    <a href="./nutzungsbedingungen.html">Nutzungsbedingungen</a>
     <a href="./pro.html">Kuvert Pro</a>
     <a href="https://github.com/iniist/Kuvert" target="_blank" rel="noopener">Quelltext</a>
   </div>

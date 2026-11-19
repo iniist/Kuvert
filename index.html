@@ -25,6 +25,9 @@
 <meta name="twitter:image" content="https://kuvert.net/og-image.png">
 <meta name="theme-color" content="#09090b">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Kuvert">
 <script>(function(){try{var s=localStorage.getItem("kuvert-theme");document.documentElement.setAttribute("data-theme",s||"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <link rel="preload" href="./fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./fonts.css">
@@ -321,7 +324,7 @@
         <article class="plan pro reveal-up">
           <div class="plan-top"><h3>Kuvert Pro</h3><span class="badge">Pro</span></div>
           <p class="tagline">Einmal lesen. Dann weg.</p>
-          <p class="price"><b>3,33 €</b>im Monat · oder 29 € im Jahr<small>inkl. MwSt.</small></p>
+          <p class="price"><b>3,33 €</b>im Monat · oder 29 € im Jahr<small>inkl. MwSt. · Abo, jederzeit zum Laufzeitende kündbar</small></p>
           <ul class="feat">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Löscht sich nach dem ersten Öffnen</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Lesebestätigung per Status-Link, Browser oder E-Mail</li>
@@ -345,6 +348,37 @@
           </ul>
           <div class="cta"><a class="btn btn-ghost" href="./teams.html">Anfrage stellen</a></div>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ÜBER ===================== -->
+  <section class="section" id="ueber">
+    <div class="wrap">
+      <div class="sec-head reveal-up">
+        <div class="kicker">Wer steckt dahinter?</div>
+        <h2>Klein, offen, <span class="serif">überprüfbar.</span></h2>
+        <p>Bei einem Werkzeug für Geheimnisse sollst du nicht einfach vertrauen müssen. Deshalb ist bei Kuvert alles offen nachvollziehbar.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal-up">
+          <div class="step-n"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+          <h3>Offener Quelltext</h3>
+          <p>Der komplette Code liegt öffentlich auf GitHub, unter MIT-Lizenz. Jeder kann prüfen, dass Kuvert genau das tut, was es verspricht.</p>
+          <p style="margin-top:12px"><a class="link" href="https://github.com/iniist/Kuvert" target="_blank" rel="noopener">Quelltext ansehen →</a></p>
+        </div>
+        <div class="step reveal-up">
+          <div class="step-n"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <h3>Gemacht in Freiburg</h3>
+          <p>Kuvert entwickelt iniist, ein kleines Software-Studio aus Freiburg im Breisgau. Ohne Investoren, ohne Werbung, ohne Datenhandel.</p>
+          <p style="margin-top:12px"><a class="link" href="./impressum.html">Impressum →</a></p>
+        </div>
+        <div class="step reveal-up">
+          <div class="step-n"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></div>
+          <h3>Server in Deutschland</h3>
+          <p>Gehostet bei STRATO in Deutschland. Kein Tracking, keine Cookies, keine Schriften oder Skripte von Drittanbietern.</p>
+          <p style="margin-top:12px"><a class="link" href="./datenschutz.html">Datenschutz →</a></p>
+        </div>
       </div>
     </div>
   </section>
@@ -392,6 +426,7 @@
       <a href="https://www.paypal.me/iniist" target="_blank" rel="noopener">Spenden</a>
       <a href="./impressum.html">Impressum</a>
       <a href="./datenschutz.html">Datenschutz</a>
+      <a href="./nutzungsbedingungen.html">Nutzungsbedingungen</a>
     </nav>
   </div>
 </footer>

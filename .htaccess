@@ -1,5 +1,6 @@
 # Kuvert – Webserver-Regeln (Apache/Strato). Alles in <IfModule>, damit fehlende Module nichts kaputt machen.
 AddDefaultCharset UTF-8
+AddType application/manifest+json .webmanifest
 ErrorDocument 404 /404.html
 
 # www.kuvert.net → kuvert.net (eine Adresse für Suchmaschinen)
@@ -32,6 +33,7 @@ ErrorDocument 404 /404.html
   ExpiresByType image/svg+xml "access plus 1 week"
   ExpiresByType application/xml "access plus 1 day"
   ExpiresByType text/plain "access plus 1 day"
+  ExpiresByType application/manifest+json "access plus 1 day"
 </IfModule>
 
 # Sicherheit
@@ -42,6 +44,10 @@ ErrorDocument 404 /404.html
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
   Header always set Strict-Transport-Security "max-age=15552000" "expr=%{HTTPS} == 'on'"
   <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  # Service Worker muss immer frisch geprüft werden
+  <FilesMatch "^sw\.js$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>

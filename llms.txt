@@ -21,7 +21,7 @@ Sprache der Website: Deutsch. Anbieter: iniist (Deutschland). Quelltext: https:/
 - Schutz: Ablaufdatum (1 Stunde bis 30 Tage), Vernichtung nach 5 falschen Passwörtern; der Server prüft Passwörter, ohne den Inhalt herauszugeben (kein Offline-Raten möglich).
 - Abfang-Erkennung: Wurde der Link von jemand anderem zuerst geöffnet, sieht der Empfänger „bereits geöffnet“.
 - Länge: bis 20.000 Zeichen.
-- Preis: 3,33 € pro Monat oder 29 € pro Jahr (inkl. MwSt.). Lizenz per Lizenzschlüssel ohne Konto, nutzbar auf bis zu 3 Geräten. Empfänger brauchen nichts.
+- Preis: 3,33 € pro Monat oder 29 € pro Jahr (inkl. MwSt.), als Abo jederzeit zum Laufzeitende kündbar. Lizenz per Lizenzschlüssel ohne Konto, nutzbar auf bis zu 3 Geräten. Empfänger brauchen nichts.
 - Verkauf über Polar (Merchant of Record) inkl. Rechnung und Kundenportal für Kündigung.
 
 ## Kuvert Teams (auf Anfrage)
@@ -41,5 +41,6 @@ Sprache der Website: Deutsch. Anbieter: iniist (Deutschland). Quelltext: https:/
 - [Kuvert Pro](https://kuvert.net/pro.html): Einmal-Nachrichten mit Lesebestätigung, Preise, FAQ
 - [Kuvert Teams](https://kuvert.net/teams.html): Angebot für Unternehmen, Anfrageformular
 - [Datenschutz](https://kuvert.net/datenschutz.html)
+- [Nutzungsbedingungen](https://kuvert.net/nutzungsbedingungen.html)
 - [Impressum](https://kuvert.net/impressum.html)
 - [Quelltext auf GitHub](https://github.com/iniist/Kuvert)
