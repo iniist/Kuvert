@@ -140,7 +140,7 @@
     $("resultEmpty").hidden = true; $("resultFull").hidden = false;
     $("outLink").textContent = link;
     $("linkLen").textContent = link.length.toLocaleString("de-DE") + " Zeichen";
-    $("resultTitle").textContent = isPro ? "Einmal-Kuvert bereit" : "Link-Kuvert bereit";
+    $("resultTitle").textContent = isPro ? "Einmal-Kuvert bereit" : "Kuvert bereit";
     $("resultSub").textContent = isPro ? "Lässt sich genau einmal öffnen." : (pw ? "Mit Passwort verschlüsselt." : "Ohne Passwort – nur kodiert.");
     const seal = $("resultSeal"); seal.classList.remove("press"); void seal.offsetWidth; seal.classList.add("on", "press");
     $("pwRemind").hidden = !pw; $("pwShow").textContent = pw || "";
@@ -303,7 +303,7 @@
       proAvailable = !!(cfg.launched || params.has("preview"));
     } catch (e) { proAvailable = false; }
     const proBtn = document.querySelector('.mode button[data-mode="pro"]');
-    proBtn.querySelector(".sub").textContent = proAvailable ? "Löscht sich nach dem Lesen" : "Gerade nicht verfügbar";
+    proBtn.querySelector(".sub").textContent = proAvailable ? "Danach gelöscht, du erfährst, wann" : "Gerade nicht verfügbar";
     const sel = $("ttl"); sel.innerHTML = "";
     cfg.ttlOptions.forEach((s) => { const o = document.createElement("option"); o.value = String(s); o.textContent = P.ttlLabel(s); if (s === cfg.defaultTtl) o.selected = true; sel.appendChild(o); });
     $("mailWrap").hidden = !cfg.mail;

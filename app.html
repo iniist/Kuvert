@@ -40,13 +40,17 @@
   .app-side{display:flex;flex-direction:column;gap:20px;position:sticky;top:88px}
 
   /* Art des Kuverts */
-  .mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;border-radius:16px;background:var(--bg-3);border:1px solid var(--line);margin-bottom:20px}
-  .mode button{all:unset;cursor:pointer;border-radius:12px;padding:11px 14px;display:flex;flex-direction:column;gap:2px;transition:background .15s,box-shadow .15s}
-  .mode button b{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text-2)}
+  .mode-q{margin-bottom:8px}
+  .mode{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+  .mode button{all:unset;box-sizing:border-box;cursor:pointer;position:relative;border-radius:14px;padding:12px 14px 13px 42px;display:flex;flex-direction:column;gap:3px;
+    border:1.5px solid var(--line-2);background:var(--bg-2);transition:border-color .15s,background .15s}
+  .mode button::before{content:"";position:absolute;left:14px;top:14px;width:18px;height:18px;border-radius:50%;box-sizing:border-box;border:2px solid var(--text-3);background:var(--bg);transition:border .15s}
+  .mode button b{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text);line-height:1.25}
   .mode button .sub{font-size:12.5px;color:var(--text-3);line-height:1.35}
-  .mode button[aria-checked="true"]{background:var(--bg-2);box-shadow:var(--shadow-sm)}
-  .mode button[aria-checked="true"] b{color:var(--text)}
-  .mode button[data-mode="pro"][aria-checked="true"] b{color:var(--accent)}
+  .mode button[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+  .mode button[aria-checked="true"]::before{border:5.5px solid var(--accent)}
+  .mode button[aria-checked="true"] .sub{color:var(--text-2)}
+  @media(hover:hover){.mode button:hover{border-color:var(--text-3)} .mode button[aria-checked="true"]:hover{border-color:var(--accent)}}
   .mode button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .mode .tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--accent);background:var(--accent-soft);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:2px}
 
@@ -153,7 +157,9 @@
     .pw-remind > span:first-child{flex-basis:100%}
     .pw-row .gen-label{display:none}
     .pw-row .btn{width:48px;padding:0;justify-content:center}
-    .mode button{padding:10px 12px}
+    .mode{gap:8px}
+    .mode button{padding:11px 10px 12px 36px}
+    .mode button::before{left:11px;top:13px}
     .mode button b{font-size:14.5px}
   }
   @keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
@@ -195,9 +201,10 @@
   <div class="app-grid">
     <!-- ============ Schreiben ============ -->
     <section class="card app-compose" aria-label="Kuvert schreiben">
-      <div class="mode" role="radiogroup" aria-label="Art des Kuverts">
-        <button type="button" role="radio" data-mode="free" aria-checked="true"><b>Link-Kuvert</b><span class="sub">Kostenlos · steckt im Link</span></button>
-        <button type="button" role="radio" data-mode="pro" aria-checked="false"><b>Einmal-Kuvert <span class="tag">Pro</span></b><span class="sub">Löscht sich nach dem Lesen</span></button>
+      <div class="label mode-q" id="modeQ">Wie oft darf man es öffnen?</div>
+      <div class="mode" role="radiogroup" aria-labelledby="modeQ">
+        <button type="button" role="radio" data-mode="free" aria-checked="true"><b>Beliebig oft</b><span class="sub">Kostenlos · ohne Server</span></button>
+        <button type="button" role="radio" data-mode="pro" aria-checked="false"><b>Nur einmal <span class="tag">Pro</span></b><span class="sub">Danach gelöscht, du erfährst, wann</span></button>
       </div>
 
       <div class="field">
