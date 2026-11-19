@@ -28,7 +28,7 @@ function kv_license_display(string $key): string
  *  - Danach weist er sich mit Schlüssel + activation_id aus. Ist das Limit erreicht, gibt es 409 device_limit.
  *  - Schlüssel ohne Limit (z. B. ältere oder Test-Schlüssel) funktionieren ohne Aktivierung.
  * Zwischenspeicher (kv_licenses):
- *  - Zeile für den Schlüssel:          status active | activation_required | invalid
+ *  - Zeile für den Schlüssel:          status active | needs_device | invalid   (max. 16 Zeichen!)
  *  - Zeile für Schlüssel + Gerät:      status active | invalid
  */
 
@@ -140,7 +140,7 @@ function kv_license_check(PDO $db, string $rawKey, ?string $activationId = null)
     } catch (RuntimeException $e) {
         return kv_license_grace($row, $cfg, $e, $ok);
     }
-    $status = !$v['valid'] ? 'invalid' : ($v['limit'] !== null ? 'activation_required' : 'active');
+    $status = !$v['valid'] ? 'invalid' : ($v['limit'] !== null ? 'needs_device' : 'active');
     kv_license_cache($db, $hash, $display, $status, $v['valid_until']);
     return kv_license_from_status(['status' => $status, 'valid_until' => $v['valid_until']], $ok);
 }
@@ -155,7 +155,7 @@ function kv_cache_fresh(array $row, int $seconds): bool
 function kv_license_from_status(array $row, callable $ok): array
 {
     $until = $row['valid_until'] !== null ? (int)$row['valid_until'] : null;
-    if ($row['status'] === 'activation_required') {
+    if ($row['status'] === 'needs_device') {
         throw new KvError(403, 'activation_required', 'Bitte den Lizenzschlüssel auf diesem Gerät neu freischalten.');
     }
     if ($row['status'] !== 'active') {
@@ -224,7 +224,7 @@ function kv_license_activate(PDO $db, string $rawKey, string $label): array
         kv_license_cache($db, $hash, $display, 'active', $v['valid_until']);
         return ['display' => $display, 'valid_until' => $v['valid_until'], 'activation_id' => null];
     }
-    kv_license_cache($db, $hash, $display, 'activation_required', $v['valid_until']);
+    kv_license_cache($db, $hash, $display, 'needs_device', $v['valid_until']);
     $manage = (string)kv_config()['manage_url'];
     $geraete = $v['limit'] === 1 ? 'einem Gerät' : "{$v['limit']} Geräten";
     throw new KvError(409, 'device_limit',

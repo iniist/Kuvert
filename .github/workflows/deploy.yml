@@ -20,13 +20,20 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          extensions: pdo_sqlite, curl, mbstring, openssl
+          extensions: pdo_sqlite, pdo_mysql, curl, mbstring, openssl
           tools: none
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: API-Tests
+      - name: API-Tests (SQLite)
         run: bash tests/run.sh api
+      - name: API-Tests (MySQL, wie auf Strato)
+        run: |
+          sudo systemctl start mysql
+          mysql -uroot -proot -e "CREATE DATABASE kuvert_test CHARACTER SET utf8mb4;"
+          rm -f api/_data/.schema-v1-*
+          KUVERT_TEST_DSN='mysql:host=127.0.0.1;dbname=kuvert_test;charset=utf8mb4' \
+          KUVERT_TEST_USER=root KUVERT_TEST_PASS=root bash tests/run.sh api
 
   deploy:
     needs: test
