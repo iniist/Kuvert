@@ -303,3 +303,30 @@ body.recipient .page,body.statusmode .page{display:none}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal-up{opacity:1;transform:none}}
 .seal.gone{box-shadow:none}
 [hidden]{display:none!important}
+
+/* ---------- Preise / Teams ---------- */
+.plans{grid-template-columns:repeat(3,1fr)}
+@media(max-width:1020px){ .plans{grid-template-columns:1fr;max-width:620px;margin:0 auto} }
+.plan .price small,.price-line small{display:block;font-size:12.5px;color:var(--text-3);margin-top:4px;letter-spacing:.01em}
+.price-line{color:var(--text-2);font-size:15px}
+.price-line small{display:inline;margin:0 0 0 6px}
+.pill-plain{padding:6px 14px}
+.pill-plain span{color:var(--accent);margin-left:2px}
+
+/* ---------- Mobiles Menü ---------- */
+.menu-btn{display:none}
+.mobile-menu{position:absolute;left:0;right:0;top:100%;z-index:40;padding:8px clamp(20px,4vw,40px) 18px;
+  background:var(--bg);border-bottom:1px solid var(--line-2);box-shadow:0 24px 40px -24px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;gap:2px;animation:menu-in .18s ease-out}
+.mobile-menu a{display:flex;justify-content:space-between;align-items:center;padding:14px 12px;border-radius:12px;font-size:17px;font-weight:540;color:var(--text)}
+.mobile-menu a:hover,.mobile-menu a:focus-visible{background:var(--bg-3)}
+.mobile-menu a::after{content:"→";color:var(--text-3);font-weight:400}
+@keyframes menu-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(max-width:720px){
+  .nav-links a.nl,.nav-links a.icon-btn{display:none}
+  .menu-btn{display:grid}
+}
+@media(min-width:721px){ .mobile-menu{display:none!important} }
+.plan .price{line-height:1.45;min-height:86px}
+.plan .price b{display:block;margin:0 0 2px}
+@media(max-width:1020px){ .plan .price{min-height:0} }

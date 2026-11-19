@@ -191,6 +191,28 @@ try {
   await pb.waitForSelector("#licActive", { state: "visible" });
   step("Gerätelimit: zweites Gerät abgelehnt, nach Freigabe auf Gerät A frei");
 
+  /* ---------- Mobiles Menü und Preiskarten ---------- */
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ph = await phone.newPage(); watch(ph, "handy");
+  await ph.goto(BASE + "/index.html");
+  assert.equal(await ph.isVisible("#nav a.nl"), false, "Textlinks auf dem Handy versteckt");
+  await ph.click(".menu-btn");
+  await ph.waitForSelector("#mobileMenu", { state: "visible" });
+  const items = await ph.$$eval("#mobileMenu a", (as) => as.map((a) => a.textContent));
+  assert.deepEqual(items, ["So geht's", "Preise", "Pro", "FAQ", "Quelltext auf GitHub"]);
+  await ph.screenshot({ path: path.join(OUT, "11-menu.png") });
+  await ph.click("#mobileMenu a[href='#varianten']");
+  await ph.waitForSelector("#mobileMenu", { state: "hidden" });
+  assert.equal(await ph.$$eval(".plans .plan", (p) => p.length), 3);
+  assert.match(await ph.textContent("#teams"), /Auf Anfrage/);
+  assert.match(await ph.textContent(".plan.pro .price"), /inkl\. MwSt\./);
+  assert.equal(await ph.$$eval(".pill-tag", (p) => p.length), 0, "kein „Neu“ mehr");
+  await ph.keyboard.press("Escape");
+  const dk = await sender.newPage(); watch(dk, "desktop-nav");
+  await dk.goto(BASE + "/index.html");
+  assert.equal(await dk.isVisible(".menu-btn"), false, "Menü-Knopf nur auf dem Handy");
+  step("Handy-Menü, drei Preiskarten, MwSt.-Hinweis, kein „Neu“");
+
   const mob = await browser.newContext({ viewport: { width: 375, height: 800 } });
   const mp = await mob.newPage(); watch(mp, "mobile");
   await mp.goto(BASE + "/pro.html");
