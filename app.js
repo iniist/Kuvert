@@ -1,228 +1,308 @@
-/* Kuvert (kostenlos) – alles passiert im Browser, der Inhalt lebt nur im #-Fragment des Links.
-   Linkformat (unverändert, damit alte Links weiter funktionieren):
-     #0<base64url(text)>                         ohne Passwort (nur kodiert)
-     #1<base64url(salt16 | iv12 | AES-GCM)>      mit Passwort (PBKDF2-SHA256, 600.000 Runden) */
+/* Kuvert – App (app.html): ein Werkzeug für Link-Kuverts (kostenlos) und Einmal-Kuverts (Pro).
+   Bausteine: free-crypto.js (KuvertFree), pro-crypto.js (KuvertCrypto), pro-core.js (KuvertPro). */
 (function () {
   "use strict";
-
-  // Web Crypto gibt es nur in einem sicheren Kontext (https oder localhost).
   if (location.protocol === "http:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
     location.replace("https://" + location.host + location.pathname + location.search + location.hash);
     return;
   }
-  const SECURE = !!(window.crypto && window.crypto.subtle);
+  const F = window.KuvertFree, C = window.KuvertCrypto, P = window.KuvertPro;
   const $ = (id) => document.getElementById(id);
+  const HOME = new URL("./", location.href.split("#")[0]).toString();       // Empfänger für Link-Kuverts
+  const mqMobile = window.matchMedia("(max-width: 860px)");
+  const canShare = typeof navigator.share === "function";
 
-  /* ---------------- Krypto ---------------- */
-  const enc = new TextEncoder(), dec = new TextDecoder();
-  function bytesToB64url(bytes) { let bin = ""; bytes.forEach((b) => (bin += String.fromCharCode(b))); return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
-  function b64urlToBytes(b64) { let s = b64.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const bin = atob(s); return Uint8Array.from(bin, (c) => c.charCodeAt(0)); }
+  let cfg = { launched: false, buyUrl: "", manageUrl: "", mail: false, maxMessageChars: 20000, ttlOptions: [3600, 86400, 604800, 2592000], defaultTtl: 86400 };
+  let proAvailable = false, mode = "free", busy = false, current = null, lastLink = "", lastPw = "";
 
-  async function deriveKey(pass, salt) {
-    const base = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]);
-    return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 600000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
-  }
-  async function buildBlob(message, pass) {
-    if (!pass) return "0" + bytesToB64url(enc.encode(message));
-    if (!SECURE) throw new Error("subtle-unavailable");
-    const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
-    const key = await deriveKey(pass, salt);
-    const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(message)));
-    const out = new Uint8Array(28 + cipher.length); out.set(salt, 0); out.set(iv, 16); out.set(cipher, 28);
-    return "1" + bytesToB64url(out);
-  }
-  async function readBlob(blob, pass) {
-    const flag = blob[0], body = blob.slice(1);
-    if (flag === "0") return { encrypted: false, text: dec.decode(b64urlToBytes(body)) };
-    if (flag === "1") {
-      const raw = b64urlToBytes(body), salt = raw.slice(0, 16), iv = raw.slice(16, 28), cipher = raw.slice(28);
-      const key = await deriveKey(pass || "", salt);
-      return { encrypted: true, text: dec.decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipher)) };
-    }
-    throw new Error("unknown");
-  }
-  const BASE = location.origin + location.pathname + "#";
-
-  /* ---------------- Hilfen ---------------- */
-  async function copyText(text) {
-    try { await navigator.clipboard.writeText(text); return true; }
-    catch (e) {
-      const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (_) {}
-      ta.remove(); return ok;
-    }
-  }
-  let toastT = null;
-  function toast(msg) { const t = $("toast"); if (!t) return; t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
-
-  const IC_LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-  const IC_LINK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 13.5a4 4 0 0 0 6 0l2.5-2.5a4 4 0 1 0-5.7-5.7l-1.3 1.3"/><path d="M14.5 10.5a4 4 0 0 0-6 0L6 13a4 4 0 1 0 5.7 5.7l1.3-1.3"/></svg>';
   const IC_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  const note = (msg, kind) => P.note($("formNote"), msg, kind);
+  const licNote = (msg, kind) => P.note($("licNote"), msg, kind);
 
-  /* ---------------- Absender ---------------- */
-  const el = {
-    secret: $("secret"), pass: $("pass"), blob: $("blob"), counter: $("counter"), out: $("out"), outLink: $("outLink"),
-    seal: $("seal"), chip: $("stateChip"), stateTxt: $("stateTxt"), passWrap: $("passWrap"), passNote: $("passNote"), charHint: $("charHint"),
-    qr: $("qr"), qrBtn: $("qrBtn"), qrCanvas: $("qrCanvas"), qrDownload: $("qrDownload"), qrNote: $("qrNote"),
-    copyBtn: $("copyBtn"), copyIc: $("copyIc"), copyTxt: $("copyTxt"), caption: $("linkCaption"),
-  };
-  let currentBlob = "0", prevSealed = null, t = null, runId = 0, busy = false;
-
-  function caption(msg) { el.caption.textContent = msg || ""; el.caption.hidden = !msg; }
-
-  function renderQR(link) {
-    if (typeof window.qrcode === "undefined") { el.qrNote.textContent = "QR-Bibliothek nicht geladen."; el.qrDownload.hidden = true; return; }
-    let qr = null;
-    for (let type = 1; type <= 40; type++) {
-      try { qr = window.qrcode(type, "L"); qr.addData(link); qr.make(); break; }
-      catch (e) { qr = null; if (String(e).indexOf("overflow") === -1) break; }
-    }
-    if (!qr) { el.qrCanvas.style.visibility = "hidden"; el.qrDownload.hidden = true; el.qrNote.textContent = "Link zu lang für einen QR-Code. Nutz den Link direkt."; return; }
-    const count = qr.getModuleCount(), margin = 2, cell = 6, size = (count + margin * 2) * cell;
-    const cv = el.qrCanvas; cv.width = size; cv.height = size;
-    const ctx = cv.getContext("2d");
-    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size); ctx.fillStyle = "#0a0a0c";
-    for (let r = 0; r < count; r++) for (let c = 0; c < count; c++) if (qr.isDark(r, c)) ctx.fillRect((c + margin) * cell, (r + margin) * cell, cell, cell);
-    cv.style.visibility = "visible"; el.qrDownload.hidden = false; el.qrNote.textContent = "Scannen führt direkt zur Nachricht.";
+  /* ---------------- Modus ---------------- */
+  function setMode(m, save) {
+    mode = m === "pro" && proAvailable ? "pro" : "free";
+    if (save) P.store.set(P.LS.mode, mode);
+    document.querySelectorAll(".mode button").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.mode === mode)));
+    const hasLic = !!P.license.key();
+    const max = mode === "pro" ? cfg.maxMessageChars : F.MAX_CHARS;
+    $("msg").maxLength = max;
+    $("proOpts").hidden = !(mode === "pro" && hasLic);
+    $("proLock").hidden = !(mode === "pro" && !hasLic);
+    $("sealTxt").textContent = mode === "pro" ? "Versiegeln & hochladen" : "Versiegeln & Link erstellen";
+    $("sealBtn").disabled = mode === "pro" && !hasLic;
+    $("actionHint").textContent = mode === "pro" ? "Ende-zu-Ende verschlüsselt · löscht sich nach dem Lesen" : "Verschlüsselt, bevor etwas dein Gerät verlässt";
+    $("pwHint").textContent = mode === "pro" ? "optional, zusätzlicher Schutz" : "empfohlen";
+    renderPwNote(); renderCount(); note("", "");
+  }
+  function renderCount() {
+    const n = $("msg").value.length, max = $("msg").maxLength;
+    $("count").textContent = n.toLocaleString("de-DE") + " / " + max.toLocaleString("de-DE");
+    $("count").style.color = n > max * 0.9 ? "var(--accent)" : "";
+  }
+  function renderPwNote() {
+    const has = !!$("pw").value, el = $("pwNote");
+    $("pwWrap").classList.toggle("on", has);
+    if (mode === "pro") { el.textContent = has ? "Der Empfänger braucht zusätzlich dieses Passwort." : "Auch ohne Passwort: nur einmal lesbar, Ende-zu-Ende verschlüsselt."; el.className = "field-note ok"; }
+    else { el.textContent = has ? "Verschlüsselt. Nur mit diesem Passwort lesbar." : "Ohne Passwort kann jeder mit dem Link mitlesen."; el.className = "field-note " + (has ? "ok" : "warn"); }
   }
 
-  /* Sofortiges Feedback ohne Verschlüsselung (Siegel, Hinweise, Button) */
-  function refreshControls() {
-    const sealed = !!el.pass.value;
-    el.seal.classList.toggle("on", sealed); el.chip.classList.toggle("on", sealed); el.passWrap.classList.toggle("on", sealed);
-    el.stateTxt.textContent = sealed ? "Versiegelt" : "Offen";
-    el.passNote.textContent = sealed ? "Verschlüsselt. Nur mit diesem Passwort lesbar." : "Ohne Passwort kann jeder mit dem Link mitlesen.";
-    el.passNote.className = "field-note " + (sealed ? "ok" : "warn");
-    if (sealed && prevSealed === false) { el.seal.classList.remove("press"); void el.seal.offsetWidth; el.seal.classList.add("press"); }
-    if (!busy && !el.copyBtn.classList.contains("done")) {
-      el.copyIc.innerHTML = sealed ? IC_LOCK : IC_LINK;
-      el.copyTxt.textContent = sealed ? "Versiegeln & kopieren" : "Link kopieren";
-    }
-    const n = el.secret.value.length;
-    el.charHint.textContent = n + " / 900";
-    el.out.classList.toggle("has", n > 0);
-    prevSealed = sealed;
+  /* Passwort aus gut unterscheidbaren Zeichen, z. B. „k7qm-x4tp-9vzr“ (≈ 60 Bit) */
+  function generatePassword() {
+    const abc = "abcdefghjkmnpqrstuvwxyz23456789", out = [];
+    const rnd = crypto.getRandomValues(new Uint32Array(12));
+    for (let i = 0; i < 12; i++) out.push(abc[rnd[i] % abc.length]);
+    return out.slice(0, 4).join("") + "-" + out.slice(4, 8).join("") + "-" + out.slice(8).join("");
   }
 
-  function schedule() { refreshControls(); if (t) clearTimeout(t); t = setTimeout(update, 220); }
-
-  /* Baut den (ggf. verschlüsselten) Link. currentBlob ist die einzige Quelle für Vorschau, QR und Kopieren. */
-  async function update() {
-    const myRun = ++runId, sealWanted = !!el.pass.value;
-    let blob;
-    try { blob = await buildBlob(el.secret.value, el.pass.value); }
-    catch (e) {
-      if (myRun !== runId) return;
-      if (sealWanted) { currentBlob = null; el.blob.textContent = "—"; el.counter.textContent = ""; caption("Verschlüsselung nicht verfügbar. Bitte die Seite über https:// öffnen."); }
-      return;
-    }
-    if (myRun !== runId) return;
-    currentBlob = blob;
-    el.blob.textContent = blob;
-    el.blob.classList.remove("flash"); void el.blob.offsetWidth; el.blob.classList.add("flash");
-    const link = BASE + blob, total = link.length;
-    el.counter.textContent = total.toLocaleString("de-DE") + " Zeichen";
-    el.counter.classList.toggle("warn", total > 1600);
-    el.outLink.classList.toggle("fade", el.outLink.scrollHeight > el.outLink.clientHeight + 2);
-    caption(total > 1900 ? "Sehr lang: Manche Apps kürzen so lange Links. Kürze die Nachricht, wenn möglich." : "");
-    if (el.qr.classList.contains("show")) renderQR(link);
+  /* ---------------- Lizenz ---------------- */
+  function renderLicense() {
+    const on = !!P.license.key();
+    $("licOn").hidden = !on; $("licOff").hidden = on;
+    $("licDisplay").textContent = P.license.display();
+    $("licChip").classList.toggle("on", on);
+    $("licChipText").textContent = on ? "Pro aktiv" : (proAvailable ? "Kostenlos" : "Kostenlos");
+    $("licBox").hidden = !proAvailable;
+    setMode(mode);
+  }
+  async function activate(key, quiet) {
+    if (!quiet) { $("licBtn").disabled = true; licNote("Prüfe …", ""); }
+    try {
+      const r = await P.license.activate(key);
+      if (!quiet) licNote(r.validUntil ? "Freigeschaltet, gültig bis " + P.fmt(r.validUntil) + "." : "Freigeschaltet. Einmal-Kuverts sind bereit.", "ok");
+      if (!quiet) setMode("pro", true);
+      renderLicense();
+      return true;
+    } catch (e) {
+      renderLicense();
+      if (e.code === "device_limit") {
+        licNote(e.message, "err");
+        if (e.data && e.data.manageUrl) {
+          const a = document.createElement("a"); a.className = "link"; a.href = e.data.manageUrl; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Kundenportal öffnen →";
+          $("licNote").append(" ", a);
+        }
+      } else if (e.status === 403) licNote(quiet ? "Dein gespeicherter Lizenzschlüssel gilt nicht mehr: " + e.message : e.message, "err");
+      else if (!quiet) licNote(e.message, "err");
+      return false;
+    } finally { $("licBtn").disabled = false; }
+  }
+  function focusLicense() {
+    $("licBox").scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => $("licKey").focus({ preventScroll: true }), 350);
   }
 
-  el.secret.addEventListener("input", schedule);
-  el.pass.addEventListener("input", schedule);
-
-  el.copyBtn.addEventListener("click", async () => {
+  /* ---------------- Versiegeln ---------------- */
+  async function seal() {
     if (busy) return;
-    busy = true;
-    const sealWanted = !!el.pass.value;
-    if (sealWanted) el.copyTxt.textContent = "Versiegle …";
-    if (t) { clearTimeout(t); t = null; }
-    try { await update(); } catch (e) {}
-    // Sicherheit: Mit Passwort wird nie ein unverschlüsselter Link kopiert.
-    if (sealWanted && (!currentBlob || currentBlob.charAt(0) !== "1")) {
-      el.copyTxt.textContent = "Nur über https://";
-      caption("Verschlüsselung nicht verfügbar. Öffne die Seite über https://, dann klappt das Versiegeln.");
-      setTimeout(() => { busy = false; refreshControls(); }, 2600);
-      return;
+    const text = $("msg").value, pw = $("pw").value;
+    if (!text.trim()) { note("Schreib zuerst eine Nachricht.", "err"); $("msg").focus(); return; }
+    if (!F.SECURE) { note("Verschlüsselung im Browser nicht verfügbar. Bitte die Seite über https:// öffnen.", "err"); return; }
+    busy = true; $("sealBtn").disabled = true; note("", "");
+    try {
+      if (mode === "free") {
+        $("sealTxt").textContent = pw ? "Verschlüssele …" : "Erstelle Link …";
+        const blob = await F.buildBlob(text, pw);
+        if (pw && blob[0] !== "1") throw new Error("Verschlüsselung fehlgeschlagen.");
+        current = null;
+        showResult(HOME + "#" + blob, pw, false);
+      } else {
+        if (!P.license.key()) { focusLicense(); return; }
+        const email = cfg.mail ? $("notifyEmail").value.trim() : "";
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { note("Diese E-Mail-Adresse sieht nicht gültig aus.", "err"); $("notifyEmail").focus(); return; }
+        $("sealTxt").textContent = "Verschlüssele …";
+        const sealed = await C.seal(text, pw);
+        $("sealTxt").textContent = "Lade hoch …";
+        const payload = { ciphertext: sealed.ciphertext, authHash: sealed.authHash, statusHash: sealed.statusHash,
+                          hasPassword: sealed.hasPassword, ttl: Number($("ttl").value), notifyEmail: email };
+        let res;
+        try { res = await P.api("create", payload, P.license.key()); }
+        catch (e) {
+          if (e.code !== "activation_required" && e.code !== "activation_invalid") throw e;
+          if (!(await activate(P.license.key(), true))) throw Object.assign(new Error($("licNote").textContent || e.message), { status: 403 });
+          res = await P.api("create", payload, P.license.key());
+        }
+        current = { id: res.id, st: sealed.statusToken, c: res.createdAt, e: res.expiresAt, n: !!res.notify, s: "waiting" };
+        P.sent.upsert(current);
+        renderSent();
+        showResult(P.PRO_PAGE + "#p1." + res.id + "." + sealed.key, pw, true);
+      }
+      $("msg").value = ""; $("pw").value = ""; renderCount(); renderPwNote();
+    } catch (e) {
+      if (e.status === 403 && /^license_/.test(e.code || "")) { P.license.forget(); renderLicense(); licNote(e.message, "err"); }
+      note(e.message === "subtle-unavailable" ? "Verschlüsselung im Browser nicht verfügbar." : e.message, "err");
+    } finally {
+      busy = false; setMode(mode);
     }
-    if (!el.secret.value) { toast("Schreib zuerst eine Nachricht."); el.secret.focus(); busy = false; refreshControls(); return; }
-    const ok = await copyText(BASE + currentBlob);
-    el.copyIc.innerHTML = IC_CHECK; el.copyTxt.textContent = ok ? "Kopiert" : "Bitte manuell kopieren"; el.copyBtn.classList.add("done");
-    if (ok) toast(sealWanted ? "Versiegelt und kopiert. Passwort separat schicken!" : "Link kopiert");
-    setTimeout(() => { el.copyBtn.classList.remove("done"); busy = false; refreshControls(); }, 1700);
-  });
-
-  el.qrBtn.addEventListener("click", () => {
-    const show = !el.qr.classList.contains("show");
-    el.qr.classList.toggle("show", show); el.qrBtn.setAttribute("aria-expanded", String(show));
-    if (show && currentBlob) renderQR(BASE + currentBlob);
-  });
-  el.qrDownload.addEventListener("click", () => {
-    try { const a = document.createElement("a"); a.href = el.qrCanvas.toDataURL("image/png"); a.download = "kuvert-qr.png"; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {}
-  });
-  $("exampleBtn").addEventListener("click", () => {
-    el.secret.value = "Der Adler landet um 18 Uhr. Bring die Kekse. Wenn jemand fragt: Du weißt von nichts.";
-    el.pass.value = "kekse"; schedule(); el.secret.focus();
-  });
-
-  /* ---------------- Empfänger ---------------- */
-  const R = {
-    seal: $("rSeal"), title: $("rTitle"), sub: $("rSub"), passBlock: $("rPassBlock"), pass: $("rPass"), open: $("rOpen"),
-    reveal: $("rReveal"), note: $("rNote"), after: $("rAfter"), copy: $("rCopy"),
-  };
-  const REDACTED = '<div class="redacted"><span></span><span></span><span></span></div>';
-  let rText = "";
-
-  function recipientShow(text, encrypted) {
-    rText = text;
-    R.passBlock.style.display = "none";
-    R.seal.classList.remove("on"); R.seal.classList.add("open", "press");
-    R.title.textContent = "Geöffnet";
-    R.sub.textContent = encrypted ? "Entschlüsselt in deinem Browser. Der Inhalt kam komplett aus dem Link." : "Diese Nachricht war nicht verschlüsselt. Der Inhalt kam komplett aus dem Link.";
-    R.note.textContent = ""; R.note.className = "note";
-    R.reveal.className = "reveal shown"; R.reveal.textContent = text; R.after.style.display = "flex";
   }
-  function recipientFail(msg) {
-    R.reveal.className = "reveal"; R.reveal.innerHTML = REDACTED;
-    R.note.textContent = msg; R.note.className = "note err";
-  }
-  async function recipientTryDecrypt(hash) {
-    if (!SECURE) { recipientFail("Zum Entschlüsseln bitte die Seite über https:// öffnen."); return; }
-    if (!R.pass.value) { recipientFail("Bitte das Passwort eingeben."); R.pass.focus(); return; }
-    R.open.disabled = true; R.open.textContent = "Öffne …";
-    try { const res = await readBlob(hash, R.pass.value); recipientShow(res.text, true); }
-    catch (e) { recipientFail("Falsches Passwort. Bitte erneut versuchen."); R.pass.select(); }
-    finally { R.open.disabled = false; R.open.textContent = "Öffnen"; }
-  }
-  R.copy.addEventListener("click", async () => { if (await copyText(rText)) toast("Inhalt kopiert"); });
-  $("createOwn").addEventListener("click", (ev) => {
-    ev.preventDefault();
-    document.body.classList.remove("recipient");
-    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
-    el.secret.value = ""; el.pass.value = ""; schedule();
-    window.scrollTo({ top: 0 }); el.secret.focus();
-  });
 
-  function initRecipient(hash) {
-    document.body.classList.add("recipient");
-    const flag = hash[0];
-    if (flag === "0") {
-      readBlob(hash, "").then((res) => recipientShow(res.text, false)).catch(() => {
-        R.passBlock.style.display = "none"; R.title.textContent = "Ungültiger Link"; R.sub.textContent = "Dieser Link ist unvollständig oder beschädigt.";
-      });
-    } else if (flag === "1") {
-      R.open.addEventListener("click", () => recipientTryDecrypt(hash));
-      R.pass.addEventListener("keydown", (e) => { if (e.key === "Enter") recipientTryDecrypt(hash); });
-      setTimeout(() => R.pass.focus(), 150);
-    }
+  function showResult(link, pw, isPro) {
+    lastLink = link; lastPw = pw;
+    $("resultEmpty").hidden = true; $("resultFull").hidden = false;
+    $("outLink").textContent = link;
+    $("linkLen").textContent = link.length.toLocaleString("de-DE") + " Zeichen";
+    $("resultTitle").textContent = isPro ? "Einmal-Kuvert bereit" : "Link-Kuvert bereit";
+    $("resultSub").textContent = isPro ? "Lässt sich genau einmal öffnen." : (pw ? "Mit Passwort verschlüsselt." : "Ohne Passwort – nur kodiert.");
+    const seal = $("resultSeal"); seal.classList.remove("press"); void seal.offsetWidth; seal.classList.add("on", "press");
+    $("pwRemind").hidden = !pw; $("pwShow").textContent = pw || "";
+    $("proStatus").hidden = !isPro;
+    if (isPro) renderLive({ state: "waiting", expiresAt: current.e });
+    $("qr").classList.remove("show"); $("qrBtn").setAttribute("aria-expanded", "false");
+    // Teilen ist auf Handys der Hauptweg, am Desktop das Kopieren.
+    const shareFirst = canShare && mqMobile.matches;
+    $("shareBtn").hidden = !canShare;
+    $("newBtn").classList.toggle("wide", !canShare);
+    $("shareBtn").className = "btn " + (shareFirst ? "btn-primary" : "btn-ghost");
+    $("copyBtn").className = "btn " + (shareFirst ? "btn-ghost" : "btn-primary");
+    $("copyBtn").querySelector("span").textContent = "Link kopieren";
+    if (link.length > 1900) note("Sehr langer Link: Manche Apps kürzen ihn. Für lange Texte ist ein Einmal-Kuvert besser.", "err");
+    openSheet();
+    if (!mqMobile.matches) P.copy(link).then((ok) => { if (ok) { markCopied(); P.toast(pw ? "Link kopiert. Passwort separat schicken!" : "Link kopiert"); } });
+  }
+  function markCopied() {
+    const b = $("copyBtn"); b.querySelector("span").textContent = "Kopiert"; b.classList.add("done");
+    setTimeout(() => { b.classList.remove("done"); b.querySelector("span").textContent = "Link kopieren"; }, 1800);
+  }
+  function renderLive(st) {
+    const d = P.describe(st);
+    $("liveDot").className = "sdot " + d.cls; $("liveText").textContent = d.text;
+  }
+  function openSheet() { if (mqMobile.matches) { $("resultCard").classList.add("show"); $("sheetBackdrop").classList.add("show"); } }
+  function closeSheet() { $("resultCard").classList.remove("show"); $("sheetBackdrop").classList.remove("show"); }
+  function newKuvert() {
+    closeSheet(); current = null; lastLink = ""; lastPw = "";
+    $("resultFull").hidden = true; $("resultEmpty").hidden = false; note("", "");
+    $("msg").focus();
+  }
+
+  /* ---------------- Deine Einmal-Kuverts ---------------- */
+  function renderSent() {
+    const list = P.sent.load(), box = $("sentList");
+    $("sentSec").hidden = !list.length || !proAvailable;
+    box.innerHTML = "";
+    list.forEach((item) => {
+      const d = P.describe({ state: item.s, expiresAt: item.e, readAt: item.r });
+      const row = document.createElement("div"); row.className = "sent-row";
+      const when = document.createElement("span"); when.className = "when"; when.textContent = P.fmt(item.c);
+      const st = document.createElement("span"); st.className = "st";
+      const dot = document.createElement("span"); dot.className = "sdot " + d.cls;
+      const txt = document.createElement("span"); txt.textContent = d.text + (item.n && item.s === "waiting" ? " · Mail-Meldung an" : "");
+      st.append(dot, txt);
+      const acts = document.createElement("span"); acts.className = "acts";
+      const mk = (label, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "linkbtn"; b.textContent = label; b.addEventListener("click", fn); acts.appendChild(b); };
+      mk("Status-Link", async () => { await P.copy(P.sent.statusLink(item)); P.toast("Status-Link kopiert"); });
+      if (item.s === "waiting") mk("Zurückziehen", () => revoke(item));
+      else mk("Entfernen", () => { P.sent.remove(item.id); renderSent(); });
+      row.append(when, st, acts);
+      box.appendChild(row);
+    });
+  }
+  async function revoke(item) {
+    if (!confirm("Dieses Kuvert zurückziehen? Der Link funktioniert danach nicht mehr.")) return;
+    try { applyStatus(item.id, await P.api("revoke", { id: item.id, statusToken: item.st })); P.toast("Kuvert zurückgezogen"); }
+    catch (e) { P.toast(e.message); }
+  }
+  function applyStatus(id, st) {
+    const r = P.sent.apply(id, st);
+    if (r.changed) P.announce(r.item);
+    renderSent();
+    if (current && current.id === id) renderLive(st);
+  }
+  let polling = false;
+  async function pollAll() {
+    if (polling || document.visibilityState !== "visible") return;
+    polling = true;
+    try {
+      for (const item of P.sent.load().filter((x) => x.s === "waiting").slice(0, 10)) {
+        try { applyStatus(item.id, await P.api("status", { id: item.id, statusToken: item.st })); }
+        catch (e) { if (e.status === 403) applyStatus(item.id, { state: "unknown" }); }
+      }
+    } finally { polling = false; }
   }
 
   /* ---------------- Start ---------------- */
-  $("linkBase").textContent = BASE;
-  // Kuvert-Links beginnen mit 0 oder 1; alles andere (#faq, #so …) sind normale Sprungmarken.
-  const hash = location.hash.slice(1);
-  if (/^[01]/.test(hash)) initRecipient(hash);
-  else { refreshControls(); update(); }
-  // Wird ein Kuvert-Link in diesem Tab geöffnet, neu laden statt alten Zustand zu zeigen.
-  window.addEventListener("hashchange", () => { if (/^#[01]/.test(location.hash)) location.reload(); });
+  async function init() {
+    // Bedienelemente
+    document.querySelectorAll(".mode button").forEach((b) => b.addEventListener("click", () => {
+      if (b.dataset.mode === "pro" && !proAvailable) { P.toast("Kuvert Pro ist gerade nicht verfügbar."); return; }
+      setMode(b.dataset.mode, true); $("msg").focus();
+    }));
+    $("msg").addEventListener("input", () => { renderCount(); if ($("formNote").classList.contains("err")) note("", ""); });
+    $("msg").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); seal(); } });
+    $("pw").addEventListener("input", renderPwNote);
+    $("pwGen").addEventListener("click", () => { $("pw").value = generatePassword(); renderPwNote(); $("pw").select(); P.toast("Sicheres Passwort erzeugt"); });
+    $("sealBtn").addEventListener("click", seal);
+    $("copyBtn").addEventListener("click", async () => { if (await P.copy(lastLink)) { markCopied(); P.toast(lastPw ? "Link kopiert. Passwort separat schicken!" : "Link kopiert"); } });
+    $("shareBtn").addEventListener("click", async () => {
+      try { await navigator.share({ title: "Kuvert", text: "Ich habe dir ein Kuvert geschickt:", url: lastLink }); }
+      catch (e) { if (e && e.name !== "AbortError") { if (await P.copy(lastLink)) P.toast("Link kopiert"); } }
+    });
+    $("qrBtn").addEventListener("click", () => {
+      const show = !$("qr").classList.contains("show");
+      $("qr").classList.toggle("show", show); $("qrBtn").setAttribute("aria-expanded", String(show));
+      if (show) P.renderQR($("qrCanvas"), lastLink);
+    });
+    $("qrDownload").addEventListener("click", () => {
+      try { const a = document.createElement("a"); a.href = $("qrCanvas").toDataURL("image/png"); a.download = "kuvert-qr.png"; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {}
+    });
+    $("pwCopy").addEventListener("click", async () => { if (await P.copy(lastPw)) P.toast("Passwort kopiert"); });
+    $("copyStatus").addEventListener("click", async () => { if (current && await P.copy(P.sent.statusLink(current))) P.toast("Status-Link kopiert"); });
+    $("newBtn").addEventListener("click", newKuvert);
+    $("sheetClose").addEventListener("click", closeSheet);
+    $("sheetBackdrop").addEventListener("click", closeSheet);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
+    $("lockKey").addEventListener("click", focusLicense);
+    $("licForm").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const k = $("licKey").value.trim();
+      if (!k) { licNote("Bitte einen Lizenzschlüssel eingeben.", "err"); return; }
+      activate(k, false).then((ok) => { if (ok) $("licKey").value = ""; });
+    });
+    $("licRemove").addEventListener("click", async () => {
+      const freed = await P.license.release(); licNote("", ""); setMode("free", true); renderLicense();
+      if (freed) P.toast("Gerät freigegeben. Du kannst den Schlüssel jetzt woanders nutzen.");
+    });
+    const nb = $("browserNotify");
+    nb.checked = P.store.get(P.LS.notify) === "1" && "Notification" in window && Notification.permission === "granted";
+    nb.addEventListener("change", async () => {
+      if (!nb.checked) { P.store.set(P.LS.notify, "0"); return; }
+      if (!("Notification" in window)) { nb.checked = false; P.toast("Dein Browser unterstützt keine Benachrichtigungen."); return; }
+      const p = Notification.permission === "default" ? await Notification.requestPermission() : Notification.permission;
+      if (p !== "granted") { nb.checked = false; P.store.set(P.LS.notify, "0"); P.toast("Benachrichtigungen wurden im Browser blockiert."); return; }
+      P.store.set(P.LS.notify, "1");
+    });
+    $("sentRefresh").addEventListener("click", () => pollAll().then(() => P.toast("Aktualisiert")));
+
+    // Startzustand sofort (ohne auf den Server zu warten)
+    const params = new URLSearchParams(location.search);
+    const wanted = params.get("mode") || P.store.get(P.LS.mode) || (P.license.key() ? "pro" : "free");
+    renderLicense(); setMode("free"); renderCount();
+
+    // Server-Einstellungen für Pro
+    try {
+      cfg = Object.assign(cfg, await P.api("config"));
+      proAvailable = !!(cfg.launched || params.has("preview"));
+    } catch (e) { proAvailable = false; }
+    const proBtn = document.querySelector('.mode button[data-mode="pro"]');
+    proBtn.querySelector(".sub").textContent = proAvailable ? "Löscht sich nach dem Lesen" : "Gerade nicht verfügbar";
+    const sel = $("ttl"); sel.innerHTML = "";
+    cfg.ttlOptions.forEach((s) => { const o = document.createElement("option"); o.value = String(s); o.textContent = P.ttlLabel(s); if (s === cfg.defaultTtl) o.selected = true; sel.appendChild(o); });
+    $("mailWrap").hidden = !cfg.mail;
+    if (cfg.buyUrl) { $("buyLink").href = cfg.buyUrl; $("lockBuy").href = cfg.buyUrl; }
+    if (cfg.manageUrl) { $("manageLink").href = cfg.manageUrl; $("manageLink").hidden = false; }
+    renderLicense(); setMode(wanted); renderSent();
+
+    // Rückkehr vom Kauf: bedanken und zum Schlüsselfeld führen
+    if (params.has("checkout_id")) {
+      try { params.delete("checkout_id"); history.replaceState(null, "", location.pathname + (params.toString() ? "?" + params : "")); } catch (e) {}
+      if (!P.license.key()) { licNote("Danke für deinen Kauf! Deinen Lizenzschlüssel findest du in der Bestätigungs-E-Mail. Gib ihn hier ein.", "ok"); setMode("pro"); focusLicense(); }
+      else P.toast("Danke für deinen Kauf!");
+    }
+    if (proAvailable && P.license.key()) activate(P.license.key(), true);
+    if (proAvailable) {
+      pollAll(); setInterval(pollAll, 15000);
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pollAll(); });
+    }
+    if (!mqMobile.matches) $("msg").focus();
+  }
+  init();
 })();
