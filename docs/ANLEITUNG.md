@@ -6,6 +6,23 @@ Teil C: Pro auf Strato einschalten.
 
 ---
 
+## Teil 0 – Vorab prüfen, ob Strato alles kann
+
+1. Im Strato-Menü nachsehen (siehe Liste unten).
+2. `docs/strato-check.php` herunterladen und **ohne SFTP** über den **Webspace-Explorer** im Strato-Menü
+   in denselben Ordner hochladen, in dem `index.html` liegt.
+3. `https://kuvert.net/strato-check.php` öffnen und optional die MySQL-Daten eintragen.
+4. Ergebnis (Screenshot) an Claude schicken und dann auf **„Prüfskript löschen“** klicken.
+   Das Skript sperrt sich nach 2 Stunden ohnehin selbst.
+
+Im Strato-Menü nachsehen:
+- **Paketname** (z. B. „Hosting Basic/Plus/Pro“).
+- **SFTP & SSH**: Kann ich einen SFTP-Zugang anlegen? Gibt es auch „SFTP + SSH“?
+- **Datenbanken**: Wie viele MySQL-Datenbanken sind enthalten, und sind noch welche frei?
+- **PHP-Version** einstellbar auf 8.1 oder neuer?
+- **E-Mail**: Kann ich ein Postfach wie `kuvert@kuvert.net` anlegen?
+- **Cronjobs** (optional, nicht zwingend nötig).
+
 ## Teil A – Automatisches Deployment GitHub → Strato
 
 Das Prinzip: Bei jedem Push auf `main` startet GitHub den Workflow `.github/workflows/deploy.yml`.
