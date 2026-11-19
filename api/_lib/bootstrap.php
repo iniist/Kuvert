@@ -54,7 +54,7 @@ function kv_defaults(): array
         'buy_url'     => '',
         'manage_url'  => '',
         'pro_launched' => false,
-        'contact_email' => '',     // Empfänger für Team-Anfragen (leer = mail.from)   // erst auf true, wenn Verkauf (Polar) bereit ist
+        'contact_email' => 'info@iniist.com',   // Empfänger für Team-Anfragen (leer = mail.from)   // erst auf true, wenn Verkauf (Polar) bereit ist
         'price_label' => '',
         'mail' => [
             'enabled'   => false,
