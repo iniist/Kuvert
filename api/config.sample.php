@@ -16,7 +16,7 @@ return [
     // Lange Zufallszeichenkette (mind. 32 Zeichen). Wird für Hashes von
     // Lizenzschlüsseln und IP-Adressen genutzt. Einmal setzen, nie wieder ändern
     // (sonst sind alle gespeicherten Lizenzen ungültig).
-    // Erzeugen z. B. mit:  php -r 'echo bin2hex(random_bytes(32)), "\n";'
+    // Erzeugen z. B. mit:  openssl rand -hex 32
     'secret' => 'HIER-EINE-LANGE-ZUFALLSZEICHENKETTE-EINTRAGEN',
 
     // Öffentliche Adresse der Seite (ohne abschließenden Slash).
@@ -35,7 +35,7 @@ return [
     ],
 
     // Lizenzen.
-    // 'local'  = nur selbst erzeugte Schlüssel (php api/_cli/license.php create)
+    // 'local'  = nur selbst erzeugte Schlüssel (php -q api/_cli/license.php create)
     // 'polar'  = Verkauf über polar.sh (Merchant of Record, kümmert sich um USt.)
     //            Selbst erzeugte Schlüssel funktionieren zusätzlich immer.
     'license' => [

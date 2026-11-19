@@ -36,7 +36,7 @@ Nicht hochgeladen werden `tests/`, `docs/`, `.github/` und `README.md`.
 2. Dein Paket wählen → **Datenbanken und Webspace** → **SFTP & SSH**.
 3. **Neuen Zugang anlegen**:
    - Typ: **SFTP** reicht. „SFTP + SSH“ nimmst du, wenn du später auch Befehle auf dem Server ausführen willst
-     (z. B. `php api/_cli/license.php create`).
+     (z. B. `php -q api/_cli/license.php create` im Ordner `kuvert-net`).
    - Passwort: ein neues, langes Passwort, nur für GitHub. Notieren.
    - Startverzeichnis: `/`, also das Hauptverzeichnis des Webspace.
 4. Notiere dir aus der Übersicht:
@@ -110,7 +110,9 @@ Sandbox und Live sind getrennte Welten mit eigenen IDs. Die Schritte sind identi
    - **Prefix**: `KUVERT` (optional, sieht schöner aus)
    - **Expiration**: leer lassen. Bei Abos endet der Schlüssel automatisch mit dem Abo.
      Bei einmaligem Kauf kannst du hier z. B. „1 Jahr“ setzen, wenn er nicht ewig gelten soll.
-   - **Activation limit** und **Usage limit**: leer lassen (Kuvert nutzt beides nicht).
+   - **Limit Activations**: **an, 3**. Das ist die Gerätebegrenzung: Ein Schlüssel läuft auf höchstens 3 Browsern.
+     Falls angeboten, auch erlauben, dass Kunden Geräte im Kundenportal selbst freigeben.
+   - **Limit Usage**: aus.
 3. Speichern. Die **Benefit-ID** (UUID) aus der Benefit-Detailseite bzw. der Adresszeile kopieren → `benefit_id`.
 
 ### B3. Produkt
@@ -167,7 +169,7 @@ Du musst dafür nichts tun, keine Mails schreiben und keine Webhooks einrichten.
    Die Datei kommt nie ins Git, das Deployment überschreibt sie nicht.
 
 ```php
-'secret'   => '…',   // php -r 'echo bin2hex(random_bytes(32)), "\n";'  – einmal setzen, nie ändern
+'secret'   => '…',   // openssl rand -hex 32  – einmal setzen, nie ändern
 'db'       => ['dsn' => 'mysql:host=…;dbname=…;charset=utf8mb4', 'user' => '…', 'pass' => '…'],
 'license'  => ['provider' => 'polar', 'polar' => [
     'organization_id' => '…', 'benefit_id' => '…', 'sandbox' => true,
@@ -190,3 +192,21 @@ Du musst dafür nichts tun, keine Mails schreiben und keine Webhooks einrichten.
    - `https://kuvert.net/pro.html?preview` → Testkauf wie in B7, Kuvert an dich selbst schicken, öffnen, Mail kommt an.
 6. **Live schalten**: `'pro_launched' => true` setzen und `'sandbox' => false` (mit Live-Werten von Polar).
    Ab dann zeigt `pro.html` für alle die App statt „Bald verfügbar“. Auf der Startseite den Hinweis „bald“ entferne ich dann im Code.
+
+---
+
+## Teil D – Pro starten (nach der Freigabe durch Polar)
+
+1. In Polar prüfen, dass der Hinweis „test mode“ verschwunden ist (Konto verifiziert, Auszahlungskonto hinterlegt).
+2. Aufräumen in Polar:
+   - Testprodukt „Kuvert Pro Test“ und dessen Checkout-Link **archivieren**.
+   - Rabattcode `KUVERTTEST` deaktivieren oder auf 0 verbleibende Einlösungen setzen.
+   - Den beim Test erzeugten Lizenzschlüssel kannst du für dich behalten; nicht weitergeben (er läuft nie ab).
+3. In Polar beim Benefit „Kuvert Pro Lizenzschlüssel“ **Limit Activations = 3** einschalten (Gerätebegrenzung).
+4. Den vorbereiteten Pull Request „Pro starten“ **mergen** (Entwurf vorher mit „Ready for review“ freigeben).
+   Er bringt die Gerätebegrenzung und entfernt die „bald“-Hinweise auf der Startseite. Das Deployment läuft
+   automatisch; unter Actions auf den grünen Haken warten (ca. 1 Minute).
+5. Erst danach in `htdocs/kuvert-config.php`: `'pro_launched' => true` setzen und hochladen.
+   Ab sofort zeigt `pro.html` die App für alle (ohne `?preview`).
+6. Kurz prüfen: kuvert.net (kein „bald“ mehr), kuvert.net/pro.html (App sichtbar, „Jetzt verfügbar“).
+

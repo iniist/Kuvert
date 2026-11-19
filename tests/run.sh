@@ -9,8 +9,9 @@ cd "$(dirname "$0")/.."
 ROOT=$PWD
 TMP=$ROOT/tests/.tmp
 PORT=${PORT:-8099}
+MOCK_PORT=${MOCK_PORT:-8096}
 mkdir -p "$TMP"
-rm -f "$TMP"/test.sqlite* "$ROOT/api/_data/mail.log"
+rm -f "$TMP"/test.sqlite* "$TMP"/polar-state.json "$ROOT/api/_data/mail.log"
 
 cat > "$TMP/config.php" <<PHP
 <?php
@@ -25,6 +26,11 @@ return [
   'price_label' => '19 € einmalig',
   'manage_url'  => 'https://example.test/portal',
   'pro_launched' => true,
+  'license'  => ['provider' => 'polar', 'polar' => [
+      'organization_id' => '11111111-1111-4111-8111-111111111111',
+      'benefit_id'      => '22222222-2222-4222-8222-222222222222',
+      'api_base'        => 'http://127.0.0.1:$MOCK_PORT',
+  ]],
   'rate'     => ['license' => 1000, 'create' => 1000, 'peek' => 1000, 'read' => 1000, 'status' => 1000],
 ];
 PHP
@@ -33,7 +39,9 @@ export KUVERT_CONFIG="$TMP/config.php"
 KEY=$(php api/_cli/license.php create --label=test 2>/dev/null)
 PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:$PORT -t "$ROOT" > "$TMP/server.log" 2>&1 &
 SERVER=$!
-trap 'kill $SERVER 2>/dev/null || true' EXIT
+php -S 127.0.0.1:$MOCK_PORT "$ROOT/tests/polar-mock.php" > "$TMP/polar-mock.log" 2>&1 &
+MOCK=$!
+trap 'kill $SERVER $MOCK 2>/dev/null || true' EXIT
 for i in $(seq 1 30); do curl -sf "http://127.0.0.1:$PORT/api/index.php?a=config" >/dev/null && break; sleep 0.2; done
 
 export KUVERT_BASE="http://127.0.0.1:$PORT" KUVERT_LICENSE="$KEY"

@@ -15,7 +15,7 @@ const browser = await chromium.launch();
 const errors = [];
 const watch = (page, name) => {
   page.on("pageerror", (e) => errors.push(`${name}: ${e.message}`));
-  page.on("console", (m) => { if (m.type() === "error" && !/status of (403|410)/.test(m.text())) errors.push(`${name} console: ${m.text()}`); });
+  page.on("console", (m) => { if (m.type() === "error" && !/status of (403|409|410)/.test(m.text())) errors.push(`${name} console: ${m.text()}`); });
 };
 const step = (s) => console.log("✓", s);
 
@@ -169,6 +169,27 @@ try {
   assert.ok(!new URL(sp2.url()).searchParams.has("checkout_id"), "checkout_id wird aus der Adresse entfernt");
   assert.ok(new URL(sp2.url()).searchParams.has("preview"));
   step("Pro: „Bald verfügbar“, mit ?preview testbar, Danke-Hinweis nach Kauf");
+
+  /* ---------- Gerätebegrenzung im Browser (Polar-Nachbau, Schlüssel mit Limit 1) ---------- */
+  const KEY1 = "KUVERT-LIMIT-0001";
+  const devA = await browser.newContext(); const pa = await devA.newPage(); watch(pa, "gerät-a");
+  await pa.goto(BASE + "/pro.html");
+  await pa.fill("#licKey", KEY1); await pa.click("#licBtn");
+  await pa.waitForSelector("#licActive", { state: "visible" });
+  assert.match(await pa.evaluate(() => localStorage.getItem("kuvert-pro-activation") || ""), /^[0-9a-f-]{36}$/);
+  await pa.fill("#secret", "von Gerät A"); await pa.click("#sendBtn");
+  await pa.waitForSelector("#result.show");
+  const devB = await browser.newContext(); const pb = await devB.newPage(); watch(pb, "gerät-b");
+  await pb.goto(BASE + "/pro.html");
+  await pb.fill("#licKey", KEY1); await pb.click("#licBtn");
+  await pb.waitForFunction(() => /schon auf einem Gerät/.test(document.getElementById("licNote").textContent));
+  assert.ok(await pb.isVisible("#licNote a.link"), "Link zum Kundenportal");
+  await pb.screenshot({ path: path.join(OUT, "10-device-limit.png") });
+  await pa.click("#licRemove");
+  await pa.waitForSelector("#licForm", { state: "visible" });
+  await pb.click("#licBtn");
+  await pb.waitForSelector("#licActive", { state: "visible" });
+  step("Gerätelimit: zweites Gerät abgelehnt, nach Freigabe auf Gerät A frei");
 
   const mob = await browser.newContext({ viewport: { width: 375, height: 800 } });
   const mp = await mob.newPage(); watch(mp, "mobile");
