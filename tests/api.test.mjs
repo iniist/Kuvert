@@ -39,6 +39,11 @@ test("config ist öffentlich", async () => {
   assert.ok(Array.isArray(r.data.ttlOptions));
 });
 
+test("API verrät die PHP-Version nicht", async () => {
+  const res = await fetch(API + "?a=config");
+  assert.equal(res.headers.get("x-powered-by"), null);
+});
+
 test("Lizenz: gültig und ungültig", async () => {
   assert.equal((await call("license", { key: LICENSE })).status, 200);
   const bad = await call("license", { key: "KUVERT-AAAAA-BBBBB-CCCCC-DDDDD" });
