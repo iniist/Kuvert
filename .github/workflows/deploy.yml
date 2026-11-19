@@ -41,6 +41,8 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: CSS/JS versionieren (Cache-Busting)
+        run: python3 .github/scripts/cache-bust.py .
       - name: lftp installieren
         run: sudo apt-get update -q && sudo apt-get install -y -q lftp
       - name: Per SFTP hochladen
