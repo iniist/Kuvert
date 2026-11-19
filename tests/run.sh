@@ -45,7 +45,7 @@ trap 'kill $SERVER $MOCK 2>/dev/null || true' EXIT
 for i in $(seq 1 30); do curl -sf "http://127.0.0.1:$PORT/api/index.php?a=config" >/dev/null && break; sleep 0.2; done
 
 export KUVERT_BASE="http://127.0.0.1:$PORT" KUVERT_LICENSE="$KEY"
-node --test tests/api.test.mjs
+node --test tests/api.test.mjs tests/seo.test.mjs
 if [ "${1:-all}" != "api" ]; then
   node tests/e2e.mjs
 fi

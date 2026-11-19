@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kuvert Pro — Einmal lesen, dann weg</title>
-<meta name="description" content="Kuvert Pro: Ende-zu-Ende verschlüsselte Nachrichten, die sich nach dem Lesen selbst löschen, mit Lesebestätigung.">
+<title>Kuvert Pro – Selbstzerstörende Nachrichten mit Lesebestätigung</title>
+<meta name="description" content="Ende-zu-Ende verschlüsselte Einmal-Nachrichten, die sich nach dem Öffnen selbst löschen. Mit Lesebestätigung und Ablaufdatum. Ab 3,33 € im Monat.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://kuvert.net/pro.html">
+<link rel="alternate" hreflang="de" href="https://kuvert.net/pro.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Kuvert">
 <meta property="og:title" content="Kuvert Pro – Einmal lesen, dann weg">
@@ -16,6 +19,7 @@
 <meta name="theme-color" content="#09090b">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <script>(function(){try{var s=localStorage.getItem("kuvert-theme");document.documentElement.setAttribute("data-theme",s||"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<link rel="preload" href="./fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./fonts.css">
 <link rel="stylesheet" href="./kuvert.css">
 <style>
@@ -101,6 +105,134 @@
 <script src="./pro-crypto.js" defer></script>
 <script src="./site.js" defer></script>
 <script src="./pro.js" defer></script>
+<!-- ld+json:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://kuvert.net/#org",
+   "name": "iniist",
+   "url": "https://kuvert.net/",
+   "logo": "https://kuvert.net/favicon.svg",
+   "sameAs": [
+    "https://github.com/iniist/Kuvert"
+   ]
+  },
+  {
+   "@type": "WebApplication",
+   "@id": "https://kuvert.net/pro.html#app",
+   "name": "Kuvert Pro",
+   "url": "https://kuvert.net/pro.html",
+   "inLanguage": "de-DE",
+   "description": "Ende-zu-Ende verschlüsselte Einmal-Nachrichten, die sich nach dem ersten Öffnen selbst löschen. Mit Lesebestätigung, Ablaufdatum und Passwortschutz.",
+   "applicationCategory": "SecurityApplication",
+   "operatingSystem": "Alle (Webbrowser)",
+   "offers": [
+    {
+     "@type": "Offer",
+     "name": "Kuvert Pro monatlich",
+     "price": "3.33",
+     "priceCurrency": "EUR",
+     "url": "https://kuvert.net/pro.html",
+     "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "price": "3.33",
+      "priceCurrency": "EUR",
+      "billingDuration": "P1M",
+      "unitCode": "MON"
+     }
+    },
+    {
+     "@type": "Offer",
+     "name": "Kuvert Pro jährlich",
+     "price": "29.00",
+     "priceCurrency": "EUR",
+     "url": "https://kuvert.net/pro.html",
+     "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "price": "29.00",
+      "priceCurrency": "EUR",
+      "billingDuration": "P1Y",
+      "unitCode": "ANN"
+     }
+    }
+   ],
+   "featureList": [
+    "Selbstzerstörung nach dem ersten Öffnen",
+    "Lesebestätigung per Status-Link, Browser oder E-Mail",
+    "Ende-zu-Ende-Verschlüsselung",
+    "Vernichtung nach 5 falschen Passwörtern",
+    "Ablaufdatum 1 Stunde bis 30 Tage",
+    "Bis 20.000 Zeichen",
+    "Lizenz für bis zu 3 Geräte"
+   ],
+   "isPartOf": {
+    "@id": "https://kuvert.net/#website"
+   },
+   "publisher": {
+    "@id": "https://kuvert.net/#org"
+   }
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Kann der Server meine Nachricht lesen?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Nein. Verschlüsselt wird in deinem Browser, der Schlüssel steht nur im #-Teil des Links. Auf dem Server liegt ausschließlich Chiffretext, unlesbar auch für den Betreiber und den Hoster."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Was wird gespeichert, und wie lange?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Chiffretext, Prüfwerte (Hashes), Zeitpunkte und optional deine E-Mail für die Meldung. Beim Öffnen, Ablauf oder Zurückziehen werden Chiffretext und E-Mail sofort gelöscht. „Geöffnet am …“ bleibt 7 Tage abrufbar, dann ist auch das weg."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Was, wenn jemand den Link abfängt?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Wer zuerst öffnet, bekommt die Nachricht, danach ist sie weg. Der eigentliche Empfänger sieht „bereits geöffnet“, und du siehst den Zeitpunkt. Mit Passwort über einen zweiten Weg nützt der Link allein gar nichts."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Und bei falschen Passwörtern?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Der Server prüft das Passwort, ohne den Inhalt herauszugeben. Nach 5 Fehlversuchen wird die Nachricht vernichtet. Durchprobieren am eigenen Rechner ist unmöglich."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Öffnen Link-Vorschauen in WhatsApp oder Slack die Nachricht?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Nein. Abgeholt wird erst, wenn der Empfänger aktiv auf „Öffnen“ klickt."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Wie funktioniert die Lizenz?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Du kaufst einen Lizenzschlüssel und gibst ihn einmal ein, ein Konto gibt es nicht. Ein Schlüssel funktioniert auf bis zu 3 Geräten. Ein Gerät gibst du frei, indem du dort „Von diesem Gerät entfernen“ klickst oder es im Kundenportal löschst. Dort findest du auch Kündigung, Rechnungen und deinen Schlüssel."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld+json:end -->
 </head>
 <body>
 <div class="backdrop" aria-hidden="true"></div>
