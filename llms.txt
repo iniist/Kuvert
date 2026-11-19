@@ -27,7 +27,7 @@ Sprache der Website: Deutsch. Anbieter: iniist (Deutschland). Quelltext: https:/
 ## Kuvert Teams (auf Anfrage)
 
 - Kuvert Pro für ganze Teams: Lizenzen zentral abgerechnet, Rechnung auf das Unternehmen (auch per Überweisung), Staffelpreise je nach Teamgröße, persönlicher Ansprechpartner.
-- Anfrage per E-Mail an info@iniist.com.
+- Anfrage über das Formular auf https://kuvert.net/teams.html (oder per E-Mail an info@iniist.com).
 
 ## Abgrenzung
 
@@ -38,6 +38,7 @@ Sprache der Website: Deutsch. Anbieter: iniist (Deutschland). Quelltext: https:/
 
 - [Kuvert – kostenlos verschlüsseln und teilen](https://kuvert.net/): Werkzeug, Funktionsweise, FAQ
 - [Kuvert Pro](https://kuvert.net/pro.html): Einmal-Nachrichten mit Lesebestätigung, Preise, FAQ
+- [Kuvert Teams](https://kuvert.net/teams.html): Angebot für Unternehmen, Anfrageformular
 - [Datenschutz](https://kuvert.net/datenschutz.html)
 - [Impressum](https://kuvert.net/impressum.html)
 - [Quelltext auf GitHub](https://github.com/iniist/Kuvert)

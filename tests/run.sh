@@ -31,7 +31,7 @@ return [
       'benefit_id'      => '22222222-2222-4222-8222-222222222222',
       'api_base'        => 'http://127.0.0.1:$MOCK_PORT',
   ]],
-  'rate'     => ['license' => 1000, 'create' => 1000, 'peek' => 1000, 'read' => 1000, 'status' => 1000],
+  'rate'     => ['license' => 1000, 'create' => 1000, 'peek' => 1000, 'read' => 1000, 'status' => 1000, 'inquiry' => 1000],
 ];
 PHP
 export KUVERT_CONFIG="$TMP/config.php"

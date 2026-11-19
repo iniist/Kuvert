@@ -22,6 +22,7 @@ function kv_routes(): array
         'config'  => ['GET',  'kv_action_config'],
         'license' => ['POST', 'kv_action_license'],
         'deactivate' => ['POST', 'kv_action_deactivate'],
+        'inquiry' => ['POST', 'kv_action_inquiry'],
         'create'  => ['POST', 'kv_action_create'],
         'peek'    => ['POST', 'kv_action_peek'],
         'read'    => ['POST', 'kv_action_read'],
@@ -277,3 +278,53 @@ function kv_action_revoke(PDO $db, array &$deferred): array
        ->execute([$r['id']]);
     return kv_sender_state(kv_load($db, $r['id']) ?? $r['row']);
 }
+
+/**
+ * Anfrage für Kuvert Teams (Formular auf teams.html). Wird per Mail an contact_email geschickt.
+ * @return array<string,mixed>
+ */
+function kv_action_inquiry(PDO $db, array &$deferred): array
+{
+    kv_rate_limit($db, 'inquiry');
+    $body = kv_body(8192);
+    // Honigtopf-Feld: für Menschen unsichtbar. Ist es ausgefüllt, war es ein Bot → so tun, als hätte es geklappt.
+    if (trim(kv_str($body, 'website', 200)) !== '') {
+        return ['ok' => true];
+    }
+    $clean = static fn (string $v): string => trim((string)preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $v));
+    $name = $clean(kv_str($body, 'name', 120));
+    $company = $clean(kv_str($body, 'company', 160));
+    $email = trim(kv_str($body, 'email', 254));
+    $size = $clean(kv_str($body, 'size', 40));
+    $message = trim(str_replace("\r", '', kv_str($body, 'message', 4000)));
+    if ($name === '' || $company === '' || $size === '') {
+        throw new KvError(400, 'missing_fields', 'Bitte Name, Unternehmen und Teamgröße angeben.');
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new KvError(400, 'bad_email', 'Diese E-Mail-Adresse sieht nicht gültig aus.');
+    }
+    if (empty($body['privacy'])) {
+        throw new KvError(400, 'privacy_required', 'Bitte stimme der Verarbeitung deiner Angaben zu.');
+    }
+    $c = kv_config();
+    $to = (string)($c['contact_email'] ?: $c['mail']['from']);
+    if (!kv_mail_enabled() || $to === '') {
+        throw new KvError(503, 'mail_unavailable', 'Das Formular ist gerade nicht erreichbar.', ['fallback' => true]);
+    }
+    $text = "Neue Anfrage für Kuvert Teams\n\n"
+        . "Name:         {$name}\n"
+        . "Unternehmen:  {$company}\n"
+        . "E-Mail:       {$email}\n"
+        . "Teamgröße:    {$size}\n\n"
+        . "Nachricht:\n" . ($message !== '' ? $message : '(keine)') . "\n\n"
+        . '— gesendet über ' . rtrim((string)$c['site_url'], '/') . '/teams.html am ' . date('d.m.Y \u\m H:i') . " Uhr\n"
+        . "Antworten an diese Mail gehen direkt an {$email}.\n";
+    try {
+        kv_mail_send($to, "Kuvert Teams – Anfrage von {$company}", $text, $email);
+    } catch (Throwable $e) {
+        error_log('[kuvert] inquiry mail: ' . $e->getMessage());
+        throw new KvError(503, 'mail_unavailable', 'Die Anfrage konnte gerade nicht verschickt werden.', ['fallback' => true]);
+    }
+    return ['ok' => true];
+}
+
