@@ -320,8 +320,20 @@ body.recipient .page,body.statusmode .page{display:none}
 .mobile-menu a:hover,.mobile-menu a:focus-visible{background:var(--bg-3)}
 .mobile-menu a::after{content:"→";color:var(--text-3);font-weight:400}
 @keyframes menu-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.menu-theme{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;padding:14px 12px;border:0;border-top:1px solid var(--line);
+  border-radius:0 0 12px 12px;background:none;color:var(--text);font:inherit;font-size:17px;font-weight:540;text-align:left;cursor:pointer}
+.menu-theme:focus-visible{background:var(--bg-3)}
+@media(hover:hover){.menu-theme:hover{background:var(--bg-3)}}
+.menu-theme .mt-icon{display:grid;width:20px;height:20px;color:var(--text-2)}
+.menu-theme .mt-icon svg{width:20px;height:20px}
+.menu-theme .mt-label{flex:1}
+.menu-theme .mt-switch{position:relative;width:44px;height:26px;border-radius:99px;background:var(--bg-3);border:1px solid var(--line-2);transition:background .2s}
+.menu-theme .mt-switch span{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--text);transition:transform .2s}
+.menu-theme[aria-checked="true"] .mt-switch{background:var(--accent);border-color:var(--accent)}
+.menu-theme[aria-checked="true"] .mt-switch span{transform:translateX(18px);background:#fff}
 @media(max-width:720px){
   .nav-links a.nl,.nav-links a.icon-btn{display:none}
+  body.has-menu-theme #themeToggle{display:none}
   .menu-btn{display:grid}
 }
 @media(min-width:721px){ .mobile-menu{display:none!important} }

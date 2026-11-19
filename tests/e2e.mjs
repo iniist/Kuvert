@@ -204,11 +204,16 @@ try {
   await ph.click(".menu-btn");
   await ph.waitForSelector("#mobileMenu", { state: "visible" });
   assert.deepEqual(await ph.$$eval("#mobileMenu a", (as) => as.map((a) => a.textContent)), ["So geht's", "Preise", "Pro", "FAQ", "Quelltext auf GitHub"]);
+  assert.ok(!(await ph.isVisible("#themeToggle")), "Farbschema-Knopf auf dem Handy nur im Menü");
+  const themeBefore = await ph.getAttribute("html", "data-theme");
+  await ph.click("#mobileMenu .menu-theme");
+  assert.notEqual(await ph.getAttribute("html", "data-theme"), themeBefore, "Umschalter im Menü wechselt das Farbschema");
+  assert.ok(await ph.isVisible("#mobileMenu"), "Menü bleibt beim Umschalten offen");
   await ph.screenshot({ path: path.join(OUT, "a7-menu.png") });
   await ph.click("#mobileMenu a[href='#varianten']");
   await ph.waitForSelector("#mobileMenu", { state: "hidden" });
   assert.equal(await ph.$$eval(".plans .plan", (p) => p.length), 3);
-  step("Startseite Handy: Menü, Schreiben-Knopf, drei Preiskarten");
+  step("Startseite Handy: Menü mit Farbschema-Umschalter, Schreiben-Knopf, drei Preiskarten");
 
   /* ================= Teams ================= */
   const tp = await rcv.newPage(); watch(tp, "teams");
