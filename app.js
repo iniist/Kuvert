@@ -324,5 +324,22 @@
     }
     if (!mqMobile.matches) $("msg").focus();
   }
+  /* Versiegeln-Leiste über der Bildschirmtastatur halten. Android/Chrome: interactive-widget=resizes-content
+     im Viewport-Meta. iOS/Safari verschiebt nur den sichtbaren Bereich: Abstand per visualViewport ausgleichen. */
+  (function keepAboveKeyboard() {
+    const vv = window.visualViewport; if (!vv) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      document.documentElement.style.setProperty("--kb", kb + "px");
+      const typing = document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+      document.body.classList.toggle("kb-open", kb > 80 || (typing && mqMobile.matches && vv.height < window.screen.height * 0.7));
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(update); };
+    vv.addEventListener("resize", queue); vv.addEventListener("scroll", queue);
+    document.addEventListener("focusin", queue); document.addEventListener("focusout", () => setTimeout(queue, 50));
+    update();
+  })();
   init();
 })();
