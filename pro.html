@@ -48,61 +48,16 @@
   .soon-box{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
   .soon-box p{flex-basis:100%;font-size:14.5px;color:var(--text-3)}
 
-  /* ---------- Pro-App ---------- */
-  .lic{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;margin-bottom:18px;border-radius:var(--r);border:1px dashed var(--line-2);background:var(--bg-2)}
-  .lic.on{border-style:solid;border-color:color-mix(in srgb,var(--ok) 50%,var(--line-2))}
-  .lic-title{font-weight:600;font-size:14px;white-space:nowrap}
-  .lic form{display:flex;gap:10px;flex:1 1 380px;flex-wrap:wrap;align-items:center}
-  .lic form .input{flex:1 1 220px;height:40px;padding:8px 12px;font-size:14.5px}
-  .lic-active{display:flex;align-items:center;gap:8px 18px;flex:1;flex-wrap:wrap;font-size:14.5px}
-  .lic-active b{color:var(--ok);font-weight:600}
-  .lic .lic-note{flex-basis:100%;margin:0;min-height:0}
-  .lic .lic-note:empty{display:none}
-  .pro-tool{display:grid;grid-template-columns:1.1fr .9fr;overflow:hidden}
-  .pro-tool > div{padding:clamp(20px,3vw,30px)}
-  .pro-tool > div + div{border-left:1px solid var(--line);background:var(--bg-3)}
-  .opts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-  .check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px;color:var(--text-2);cursor:pointer}
-  .check input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
-  .sealbox{text-align:center;padding:10px 0 4px}
-  .sealbox .seal{margin:0 auto 14px}
-  .seal-state{font-weight:600;font-size:17px;letter-spacing:-.02em;color:var(--text-3)}
-  .seal-state.sealed{color:var(--accent)}
-  .seal-sub{font-size:14px;color:var(--text-2);max-width:32ch;margin:6px auto 0}
-  .result{display:none;margin-top:20px}
-  .result.show{display:block}
-  .result .out{margin-top:0}
-  .sub-label{display:block;font-size:12.5px;font-weight:520;color:var(--text-3);margin:18px 0 6px}
-  .row-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-  .row-actions .btn-primary{flex:1}
-  .status-line{display:flex;align-items:center;gap:10px;font-size:14px;margin-top:16px;padding:12px 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--bg-2)}
   .sdot{width:9px;height:9px;border-radius:50%;background:var(--text-3);flex:none}
-  .sdot.waiting{background:var(--accent);animation:pulse 1.8s infinite}
-  .sdot.read{background:var(--ok)}
-  .sdot.bad{background:var(--bad)}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
-  .result .qr{display:flex}
-  .sent{margin-top:28px}
-  .sent-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
-  .sent-head h3{font-size:17px;font-weight:600;letter-spacing:-.02em}
-  .sent-row{display:flex;align-items:center;gap:10px 18px;padding:14px 2px;border-bottom:1px solid var(--line);font-size:14px;flex-wrap:wrap}
-  .sent-row .when{font-family:var(--mono);font-size:12.5px;color:var(--text-3);min-width:150px}
-  .sent-row .st{display:flex;align-items:center;gap:9px;flex:1;min-width:210px;color:var(--text-2)}
-  .sent-row .acts{display:flex;gap:14px}
-  .sent-row .linkbtn{background:none;border:0;padding:0;cursor:pointer;font-size:13.5px;color:var(--text-3);border-bottom:1px solid var(--line-2)}
-  .sent-row .linkbtn:hover{color:var(--accent);border-color:var(--accent)}
-  .sent-cap{font-size:13px;color:var(--text-3);margin-top:12px}
-
   /* Empfänger-Extras */
   .rmeta{font-size:13px;color:var(--text-3);margin-top:14px;font-family:var(--mono)}
   .rmeta:empty,#rNote:empty{display:none}
   .rwarn{margin-top:18px;text-align:left;font-size:14.5px;color:var(--text-2);border-left:3px solid var(--accent);padding:4px 0 4px 14px}
   .once{margin-bottom:20px}
 
-  @media(max-width:860px){ .pro-tool{grid-template-columns:1fr} .pro-tool > div + div{border-left:0;border-top:1px solid var(--line)} .opts{grid-template-columns:1fr} }
 </style>
-<script src="./qrcode.js" defer></script>
 <script src="./pro-crypto.js" defer></script>
+<script src="./pro-core.js" defer></script>
 <script src="./site.js" defer></script>
 <script src="./pro.js" defer></script>
 <!-- ld+json:start -->
@@ -247,6 +202,7 @@
       <a class="nl hide-sm" href="#wie">So geht's</a>
       <a class="nl hide-sm" href="#faq">FAQ</a>
       <a class="nl" href="./">Kostenlos</a>
+      <a class="btn btn-primary btn-sm nav-cta" href="./app"><span class="cta-long">Kuvert schreiben</span><span class="cta-short">Schreiben</span></a>
       <button class="icon-btn" id="themeToggle" type="button" aria-label="Farbschema wechseln"></button>
     </nav>
   </div>
@@ -306,9 +262,9 @@
           <p>Kuvert Pro startet in Kürze. Die kostenlose Version bleibt, wie sie ist.</p>
         </div>
         <div class="soon-box" id="heroLive" hidden>
-          <a class="btn btn-primary" id="planBuy" href="#app">Pro freischalten</a>
-          <span class="price-line"><span id="planPrice"></span> <small>inkl. MwSt.</small></span>
-          <p>Für Teams? <a class="link" href="./teams.html">Kuvert Teams auf Anfrage</a></p>
+          <a class="btn btn-primary" id="planBuy" href="./app?mode=pro">Pro kaufen</a>
+          <a class="btn btn-ghost" id="planApp" href="./app?mode=pro">Schlüssel eingeben</a>
+          <p><span class="price-line"><span id="planPrice"></span> <small>inkl. MwSt.</small></span><br>Für Teams? <a class="link" href="./teams.html">Kuvert Teams auf Anfrage</a></p>
         </div>
       </div>
 
@@ -321,87 +277,6 @@
           <li class="x"><span class="d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span><div><b>Gelöscht</b><small><s>Chiffretext</s> · im selben Moment</small></div><time>14:31</time></li>
         </ol>
         <div class="notif"><span class="seal open"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.6" fill="currentColor"/><path d="M12 11.5 10.3 17.5h3.4Z" fill="currentColor"/></svg></span><div><b>Dein Kuvert wurde geöffnet</b><small>Heute, 14:31 Uhr</small></div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== APP (erst nach Start sichtbar) ===================== -->
-  <section class="section" id="app" hidden>
-    <div class="wrap">
-      <div class="lic" id="lic">
-        <span class="lic-title">Pro-Lizenz</span>
-        <form id="licForm" autocomplete="off">
-          <input class="input" id="licKey" type="text" placeholder="Lizenzschlüssel eingeben" spellcheck="false" aria-label="Lizenzschlüssel">
-          <button class="btn btn-ghost btn-sm" id="licBtn" type="submit">Freischalten</button>
-          <a class="link" id="buyLink" href="#" target="_blank" rel="noopener" style="display:none;font-size:14px">Lizenz kaufen →</a>
-        </form>
-        <div class="lic-active" id="licActive" style="display:none">
-          <span><b>✓ Pro aktiv</b> · <span id="licDisplay" class="mono"></span></span>
-          <a class="link" id="manageLink" href="#" target="_blank" rel="noopener" style="display:none;font-size:14px">Abo &amp; Rechnungen verwalten →</a>
-          <button class="textbtn" id="licRemove" type="button">Von diesem Gerät entfernen</button>
-        </div>
-        <p class="note lic-note" id="licNote"></p>
-      </div>
-
-      <div class="card pro-tool">
-        <div>
-          <div class="field">
-            <label class="label" for="secret">Nachricht <span class="hint" id="charcount">0 / 20.000</span></label>
-            <textarea class="textarea" id="secret" placeholder="Zugangsdaten, ein Wiederherstellungscode, eine vertrauliche Notiz …" maxlength="20000"></textarea>
-          </div>
-          <div class="field">
-            <label class="label" for="pass">Passwort <span class="hint">optional, zusätzlicher Schutz</span></label>
-            <input class="input" id="pass" type="text" placeholder="Über einen anderen Weg teilen" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="opts">
-            <div>
-              <label class="label" for="ttl">Verfällt ungelesen nach</label>
-              <select class="select" id="ttl"></select>
-            </div>
-            <div id="mailWrap" style="display:none">
-              <label class="label" for="notifyEmail">Meldung per E-Mail <span class="hint">optional</span></label>
-              <input class="input" id="notifyEmail" type="email" placeholder="du@beispiel.de" autocomplete="email">
-            </div>
-          </div>
-          <label class="check"><input type="checkbox" id="browserNotify"> <span>Browser-Benachrichtigung beim Öffnen (solange diese Seite offen ist)</span></label>
-          <div class="composer-actions">
-            <button class="btn btn-primary" id="sendBtn" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-              <span id="sendTxt">Versiegeln &amp; Link erstellen</span>
-            </button>
-          </div>
-          <p class="note" id="formNote"></p>
-        </div>
-
-        <div>
-          <div class="sealbox">
-            <div class="seal lg" id="wax"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.6" fill="currentColor"/><path d="M12 11.5 10.3 17.5h3.4Z" fill="currentColor"/></svg></div>
-            <div class="seal-state" id="sealState">Noch leer</div>
-            <div class="seal-sub" id="sealSub">Schreib eine Nachricht und erstelle den Link. Er funktioniert genau einmal.</div>
-          </div>
-          <div class="result" id="result">
-            <span class="sub-label">Link für den Empfänger</span>
-            <div class="out has"><div class="out-link" id="outLink"></div></div>
-            <div class="row-actions">
-              <button class="btn btn-primary btn-sm" id="copyLink" type="button">Link kopieren</button>
-              <button class="btn btn-ghost btn-sm" id="newBtn" type="button">Neues Kuvert</button>
-            </div>
-            <div class="qr">
-              <div class="qr-frame"><canvas id="qrCanvas"></canvas></div>
-              <div class="qr-side"><span>Oder scannen lassen.</span><button class="btn btn-ghost btn-sm" id="qrDownload" type="button">Als PNG</button></div>
-            </div>
-            <div class="status-line"><span class="sdot waiting" id="liveDot"></span><span id="liveText">Wartet auf Öffnen …</span></div>
-            <span class="sub-label">Status-Link (nur für dich)</span>
-            <div class="out"><div class="out-link" id="outStatus"></div></div>
-            <div class="row-actions"><button class="btn btn-ghost btn-sm" id="copyStatus" type="button">Status-Link kopieren</button></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="sent" id="sentSec">
-        <div class="sent-head"><h3>Deine Kuverts</h3><button class="btn btn-ghost btn-sm" id="sentRefresh" type="button">Aktualisieren</button></div>
-        <div id="sentList"></div>
-        <p class="sent-cap">Die Liste liegt nur in diesem Browser, ohne Inhalte. Erledigte Kuverts verschwinden nach 7 Tagen.</p>
       </div>
     </div>
   </section>

@@ -37,7 +37,7 @@ PHP
 export KUVERT_CONFIG="$TMP/config.php"
 
 KEY=$(php api/_cli/license.php create --label=test 2>/dev/null)
-PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:$PORT -t "$ROOT" > "$TMP/server.log" 2>&1 &
+PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:$PORT -t "$ROOT" "$ROOT/tests/router.php" > "$TMP/server.log" 2>&1 &
 SERVER=$!
 php -S 127.0.0.1:$MOCK_PORT "$ROOT/tests/polar-mock.php" > "$TMP/polar-mock.log" 2>&1 &
 MOCK=$!

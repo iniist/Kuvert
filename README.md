@@ -46,21 +46,23 @@ Du kannst das selbst prüfen: Öffne den Netzwerk-Tab deines Browsers und beobac
 ## Dateien
 
 ```
-index.html        Kostenlose App (komplett ohne Server)
-app.js            Logik der kostenlosen App (Verschlüsseln, Link, QR, Empfänger)
-site.js           Gemeinsam: Farbschema, Navigation, Einblenden
+index.html        Startseite: Erklärung, Werkzeug zum Ausprobieren, Empfänger-Ansicht für Link-Kuverts (#0…/#1…)
+home.js           Logik der Startseite
+app.html, app.js  Die App (kuvert.net/app): Link-Kuvert (kostenlos) und Einmal-Kuvert (Pro) in einem Werkzeug
+free-crypto.js    Verschlüsselung der kostenlosen Link-Kuverts (AES-GCM, PBKDF2)
+pro.html, pro.js  Kuvert Pro: Erklärung & Kauf, Empfänger- (#p1…) und Status-Ansicht (#s1…)
+pro-crypto.js     Verschlüsselung der Einmal-Kuverts (Web Crypto, HKDF)
+pro-core.js       Gemeinsam für App und Pro-Seite: Server-API, Lizenz/Gerät, „Deine Kuverts“
+teams.html/.js    Kuvert Teams: Anfrageformular
+site.js           Gemeinsam: Farbschema, Navigation, Handy-Menü, Einblenden
 kuvert.css        Design-System für alle Seiten
 fonts.css, fonts/ Lokale Schriften (Geist, Geist Mono, Instrument Serif)
 qrcode.js         QR-Code-Bibliothek (lokal, MIT-Lizenz, von kazuhikoarase)
-favicon.svg, og-image.png
+api/              PHP-Backend (nur api/index.php ist öffentlich)
+robots.txt, sitemap.xml, llms.txt, .htaccess, 404.html, favicon.svg, og-image.png
 
-pro.html          Kuvert Pro – Seite (zeigt „Bald verfügbar“, bis pro_launched = true)
-pro.js            Kuvert Pro – Logik (Lizenz, Versenden, Empfangen, Status)
-pro-crypto.js     Kuvert Pro – Verschlüsselung (Web Crypto)
-api/              Kuvert Pro – PHP-Backend (nur api/index.php ist öffentlich)
-
-docs/             Anleitung + Vorlage für og-image.png (wird nicht hochgeladen)
-tests/            API- und Browser-Tests (wird nicht hochgeladen)
+docs/             Anleitung, Strato-Check, JSON-LD- und OG-Bild-Generator (wird nicht hochgeladen)
+tests/            API-, SEO- und Browser-Tests (wird nicht hochgeladen)
 ```
 
 ---

@@ -37,6 +37,7 @@ Sprache der Website: Deutsch. Anbieter: iniist (Deutschland). Quelltext: https:/
 ## Seiten
 
 - [Kuvert – kostenlos verschlüsseln und teilen](https://kuvert.net/): Werkzeug, Funktionsweise, FAQ
+- [Kuvert-App](https://kuvert.net/app): Werkzeug zum Schreiben – Link-Kuvert (kostenlos) oder Einmal-Kuvert (Pro)
 - [Kuvert Pro](https://kuvert.net/pro.html): Einmal-Nachrichten mit Lesebestätigung, Preise, FAQ
 - [Kuvert Teams](https://kuvert.net/teams.html): Angebot für Unternehmen, Anfrageformular
 - [Datenschutz](https://kuvert.net/datenschutz.html)
