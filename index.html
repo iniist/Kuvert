@@ -3,11 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kuvert — Geheimnisse verschicken, ohne Spuren</title>
-<meta name="description" content="Passwörter und vertrauliche Notizen sicher teilen: verschlüsselt im Browser, ohne Server, ohne Konto. Die Nachricht steckt nur im Link.">
+<title>Kuvert – Passwörter sicher teilen, verschlüsselt per Link</title>
+<meta name="description" content="Passwörter und vertrauliche Nachrichten sicher verschicken: im Browser verschlüsselt (AES-256), ohne Server, ohne Konto. Kostenlos und Open Source.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://kuvert.net/">
+<link rel="alternate" hreflang="de" href="https://kuvert.net/">
+<link rel="alternate" hreflang="x-default" href="https://kuvert.net/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Kuvert">
-<meta property="og:title" content="Kuvert – Geheimnisse verschicken, ohne Spuren">
+<meta property="og:title" content="Kuvert – Passwörter sicher teilen, verschlüsselt per Link">
 <meta property="og:description" content="Verschlüsselt im Browser, ohne Server, ohne Konto. Die Nachricht steckt nur im Link.">
 <meta property="og:url" content="https://kuvert.net/">
 <meta property="og:image" content="https://kuvert.net/og-image.png">
@@ -22,11 +26,142 @@
 <meta name="theme-color" content="#09090b">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <script>(function(){try{var s=localStorage.getItem("kuvert-theme");document.documentElement.setAttribute("data-theme",s||"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<link rel="preload" href="./fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./fonts.css">
 <link rel="stylesheet" href="./kuvert.css">
 <script src="./qrcode.js" defer></script>
 <script src="./site.js" defer></script>
 <script src="./app.js" defer></script>
+<!-- ld+json:start -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://kuvert.net/#org",
+   "name": "iniist",
+   "url": "https://kuvert.net/",
+   "logo": "https://kuvert.net/favicon.svg",
+   "sameAs": [
+    "https://github.com/iniist/Kuvert"
+   ]
+  },
+  {
+   "@type": "WebSite",
+   "@id": "https://kuvert.net/#website",
+   "url": "https://kuvert.net/",
+   "name": "Kuvert",
+   "inLanguage": "de-DE",
+   "publisher": {
+    "@id": "https://kuvert.net/#org"
+   }
+  },
+  {
+   "@type": "WebApplication",
+   "@id": "https://kuvert.net/#app",
+   "name": "Kuvert",
+   "url": "https://kuvert.net/",
+   "inLanguage": "de-DE",
+   "description": "Passwörter und vertrauliche Nachrichten sicher teilen: im Browser mit AES-256-GCM verschlüsselt, die Nachricht steckt nur im Link. Ohne Server, ohne Konto.",
+   "applicationCategory": "SecurityApplication",
+   "operatingSystem": "Alle (Webbrowser)",
+   "browserRequirements": "Aktueller Browser mit Web Crypto API",
+   "isAccessibleForFree": true,
+   "license": "https://opensource.org/licenses/MIT",
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+   },
+   "featureList": [
+    "Verschlüsselung im Browser (AES-256-GCM, PBKDF2)",
+    "Nachricht steckt komplett im Link",
+    "Kein Server, keine Datenbank, kein Konto",
+    "QR-Code",
+    "Open Source"
+   ],
+   "publisher": {
+    "@id": "https://kuvert.net/#org"
+   },
+   "sameAs": [
+    "https://github.com/iniist/Kuvert"
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Ist das wirklich sicher?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Mit Passwort: ja. Verschlüsselt wird mit AES-256-GCM, der Schlüssel entsteht per PBKDF2 (600.000 Runden) aus deinem Passwort. Ohne Passwort ist die Nachricht nur kodiert, und jeder mit dem Link kann sie lesen."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Wie verschicke ich ein Passwort sicher?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Tipp die Nachricht in Kuvert ein, setze ein Passwort und schick den Link per Chat oder Mail. Das Passwort teilst du über einen zweiten Weg, etwa per SMS oder Anruf. Wer nur den Link abfängt, kann nichts lesen. Soll die Nachricht nach dem Lesen verschwinden, nimm Kuvert Pro."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Wo werden meine Daten gespeichert?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Nirgends. Die kostenlose Version hat keinen Server, keine Datenbank und kein Konto. Die Nachricht existiert nur im Link, den du verschickst."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Löscht sich die Nachricht nach dem Lesen?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "In der kostenlosen Version nicht, denn ohne Server gibt es niemanden, der löschen könnte. Lösch den Link dort, wo du ihn geteilt hast. Echte Selbstzerstörung mit Lesebestätigung bietet Kuvert Pro."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Was ist der Unterschied zu PrivNote & Co.?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Solche Dienste legen deine Nachricht auf ihren Server. Kuvert kommt ohne aus, es gibt also nichts, das gehackt oder herausverlangt werden könnte. Kuvert Pro nutzt einen Server, aber nur für Chiffretext: Den Schlüssel bekommt er nie."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Wie lang darf eine Nachricht sein?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Etwa 900 Zeichen. Mehr passt nicht zuverlässig in einen Link. Ideal für Passwörter, Codes und kurze Notizen."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Brauche ich eine App oder ein Konto?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Nein. Kuvert läuft in jedem aktuellen Browser auf Handy, Tablet und Computer. Absender und Empfänger brauchen weder App noch Konto."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Was kostet das?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Kuvert ist kostenlos, ohne Limit und ohne Werbung, und bleibt es auch. Wenn es dir hilft, freue ich mich über eine kleine Spende."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+<!-- ld+json:end -->
 </head>
 <body>
 <div class="backdrop" aria-hidden="true"></div>
@@ -208,6 +343,8 @@
       <div class="faq reveal-up">
         <details open><summary>Ist das wirklich sicher?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
           <div class="ans"><strong>Mit Passwort: ja.</strong> Verschlüsselt wird mit AES-256-GCM, der Schlüssel entsteht per PBKDF2 (600.000 Runden) aus deinem Passwort. <strong>Ohne Passwort</strong> ist die Nachricht nur kodiert, und jeder mit dem Link kann sie lesen.</div></details>
+        <details><summary>Wie verschicke ich ein Passwort sicher?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="ans">Tipp die Nachricht in Kuvert ein, setze ein <strong>Passwort</strong> und schick den Link per Chat oder Mail. Das Passwort teilst du über einen <strong>zweiten Weg</strong>, etwa per SMS oder Anruf. Wer nur den Link abfängt, kann nichts lesen. Soll die Nachricht nach dem Lesen verschwinden, nimm <a href="./pro.html">Kuvert Pro</a>.</div></details>
         <details><summary>Wo werden meine Daten gespeichert?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
           <div class="ans">Nirgends. Die kostenlose Version hat keinen Server, keine Datenbank und kein Konto. Die Nachricht existiert nur im Link, den du verschickst.</div></details>
         <details><summary>Löscht sich die Nachricht nach dem Lesen?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
@@ -216,6 +353,8 @@
           <div class="ans">Solche Dienste legen deine Nachricht auf ihren Server. Kuvert kommt ohne aus, es gibt also nichts, das gehackt oder herausverlangt werden könnte. Kuvert Pro nutzt einen Server, aber nur für Chiffretext: Den Schlüssel bekommt er nie.</div></details>
         <details><summary>Wie lang darf eine Nachricht sein?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
           <div class="ans">Etwa 900 Zeichen. Mehr passt nicht zuverlässig in einen Link. Ideal für Passwörter, Codes und kurze Notizen.</div></details>
+        <details><summary>Brauche ich eine App oder ein Konto?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="ans">Nein. Kuvert läuft in jedem aktuellen Browser auf Handy, Tablet und Computer. Absender und Empfänger brauchen weder App noch Konto.</div></details>
         <details><summary>Was kostet das?<span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
           <div class="ans">Kuvert ist kostenlos, ohne Limit und ohne Werbung, und bleibt es auch. Wenn es dir hilft, freue ich mich über eine <a href="https://www.paypal.me/iniist" target="_blank" rel="noopener">kleine Spende</a>.</div></details>
       </div>

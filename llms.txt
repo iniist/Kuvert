@@ -1,0 +1,38 @@
+# Kuvert
+
+> Kuvert (kuvert.net) ist ein kostenloses Open-Source-Werkzeug, um Passwörter, Zugangsdaten und vertrauliche Notizen sicher zu teilen. Die Nachricht wird im Browser verschlüsselt (AES-256-GCM) und steckt komplett im Link – ohne Server, ohne Datenbank, ohne Konto. Kuvert Pro ergänzt Nachrichten, die sich nach dem ersten Öffnen selbst löschen, mit Lesebestätigung.
+
+Sprache der Website: Deutsch. Anbieter: iniist (Deutschland). Quelltext: https://github.com/iniist/Kuvert (MIT-Lizenz).
+
+## Kuvert (kostenlos)
+
+- Zweck: Geheimnisse wie Passwörter, WLAN-Zugänge, Wiederherstellungscodes oder vertrauliche Notizen per Link oder QR-Code verschicken.
+- Funktionsweise: Der Inhalt wird im Browser verschlüsselt und im Fragment des Links abgelegt (der Teil hinter `#`). Browser senden das Fragment nie an einen Server. Es gibt keine Datenbank und keine Speicherung.
+- Verschlüsselung: AES-256-GCM über die Web Crypto API; der Schlüssel wird per PBKDF2-SHA-256 mit 600.000 Iterationen aus einem Passwort abgeleitet. Ohne Passwort ist der Inhalt nur kodiert (Base64), nicht geheim.
+- Empfohlener Ablauf: Nachricht schreiben, Passwort setzen, Link teilen und das Passwort über einen anderen Kanal (z. B. SMS oder Anruf) weitergeben.
+- Grenzen: Keine Selbstzerstörung (ohne Server kann nichts gelöscht werden); der Link bleibt gültig, solange er existiert. Länge: ca. 900 Zeichen.
+- Kosten: kostenlos, ohne Konto, ohne Werbung, ohne Tracking, ohne Cookies. Lädt keine Ressourcen von Drittanbietern.
+
+## Kuvert Pro (kostenpflichtig)
+
+- Einmal-Nachrichten: Die verschlüsselte Nachricht liegt bis zum ersten Öffnen auf dem Server und wird beim Öffnen sofort gelöscht.
+- Ende-zu-Ende verschlüsselt: Der Schlüssel steht nur im Link-Fragment; der Server speichert ausschließlich Chiffretext und kann nicht mitlesen.
+- Lesebestätigung: per Status-Link, Browser-Benachrichtigung oder E-Mail.
+- Schutz: Ablaufdatum (1 Stunde bis 30 Tage), Vernichtung nach 5 falschen Passwörtern; der Server prüft Passwörter, ohne den Inhalt herauszugeben (kein Offline-Raten möglich).
+- Abfang-Erkennung: Wurde der Link von jemand anderem zuerst geöffnet, sieht der Empfänger „bereits geöffnet“.
+- Länge: bis 20.000 Zeichen.
+- Preis: 3,33 € pro Monat oder 29 € pro Jahr. Lizenz per Lizenzschlüssel ohne Konto, nutzbar auf bis zu 3 Geräten. Empfänger brauchen nichts.
+- Verkauf über Polar (Merchant of Record) inkl. Rechnung und Kundenportal für Kündigung.
+
+## Abgrenzung
+
+- Gegenüber PrivNote, One-Time Secret und ähnlichen Diensten: Die kostenlose Version von Kuvert speichert nichts auf einem Server. Kuvert Pro speichert nur Chiffretext; der Schlüssel erreicht den Server nie.
+- Gegenüber Messengern: Kuvert-Nachrichten bleiben nicht im Chatverlauf lesbar, wenn ein Passwort genutzt wird (bzw. werden bei Pro nach dem Öffnen gelöscht).
+
+## Seiten
+
+- [Kuvert – kostenlos verschlüsseln und teilen](https://kuvert.net/): Werkzeug, Funktionsweise, FAQ
+- [Kuvert Pro](https://kuvert.net/pro.html): Einmal-Nachrichten mit Lesebestätigung, Preise, FAQ
+- [Datenschutz](https://kuvert.net/datenschutz.html)
+- [Impressum](https://kuvert.net/impressum.html)
+- [Quelltext auf GitHub](https://github.com/iniist/Kuvert)
