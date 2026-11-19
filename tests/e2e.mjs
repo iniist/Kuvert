@@ -164,7 +164,11 @@ try {
   await sp2.goto(BASE + "/pro.html?preview");
   await sp2.waitForSelector("#app", { state: "visible" });
   assert.equal(await sp2.textContent("#heroBadge"), "Vorschau");
-  step("Pro: „Bald verfügbar“, mit ?preview testbar");
+  await sp2.goto(BASE + "/pro.html?preview&checkout_id=test123");
+  await sp2.waitForFunction(() => /Danke für deinen Kauf/.test(document.getElementById("licNote").textContent));
+  assert.ok(!new URL(sp2.url()).searchParams.has("checkout_id"), "checkout_id wird aus der Adresse entfernt");
+  assert.ok(new URL(sp2.url()).searchParams.has("preview"));
+  step("Pro: „Bald verfügbar“, mit ?preview testbar, Danke-Hinweis nach Kauf");
 
   const mob = await browser.newContext({ viewport: { width: 375, height: 800 } });
   const mp = await mob.newPage(); watch(mp, "mobile");
