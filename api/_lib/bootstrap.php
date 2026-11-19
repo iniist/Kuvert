@@ -108,7 +108,11 @@ function kv_config(): array
                 $merged['limits']['ttl_options'] = array_values(array_map('intval', $loaded['limits']['ttl_options']));
             }
             // Nicht ersetzte Platzhalter (>>> … <<<) zählen als „nicht eingerichtet“.
-            $flat = json_encode($merged) ?: '';
+            $check = $merged;
+            if (empty($check['mail']['enabled'])) {
+                unset($check['mail']);   // Mail aus: deren Platzhalter stören nicht
+            }
+            $flat = json_encode($check) ?: '';
             if (str_contains($flat, '>>>') || str_contains($flat, '<<<')) {
                 throw new KvError(500, 'not_configured', 'Server ist nicht fertig eingerichtet (Platzhalter in der Konfiguration).');
             }
