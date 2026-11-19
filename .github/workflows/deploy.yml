@@ -1,0 +1,62 @@
+# Testet und lädt die Seite bei jedem Push auf "main" per SFTP zu Strato hoch.
+# Einrichtung: docs/ANLEITUNG.md, Teil A. Benötigte Repository-Secrets:
+#   STRATO_SFTP_HOST, STRATO_SFTP_USER, STRATO_SFTP_PASSWORD, STRATO_TARGET_DIR
+name: Deploy zu Strato
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # manuell starten: GitHub → Actions → "Deploy zu Strato" → Run workflow
+
+concurrency:
+  group: deploy-strato
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_sqlite, curl, mbstring, openssl
+          tools: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: API-Tests
+        run: bash tests/run.sh api
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: lftp installieren
+        run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+      - name: Per SFTP hochladen
+        env:
+          HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          USER: ${{ secrets.STRATO_SFTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          TARGET: ${{ secrets.STRATO_TARGET_DIR }}
+        run: |
+          test -n "$HOST" && test -n "$USER" && test -n "$LFTP_PASSWORD" && test -n "$TARGET" \
+            || { echo "::error::Secrets fehlen (siehe docs/ANLEITUNG.md)"; exit 1; }
+          # Ohne --delete: Dateien, die nur auf dem Server liegen (config.php, Datenbank, Logs), bleiben unangetastet.
+          lftp -c "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3; set net:timeout 30;
+            open --env-password -u \"$USER\" sftp://$HOST;
+            mirror --reverse --verbose --parallel=4 \
+              --exclude ^\.git/ --exclude ^\.github/ --exclude ^tests/ --exclude ^docs/ \
+              --exclude ^\.gitignore$ --exclude ^README\.md$ \
+              --exclude ^api/config\.php$ --exclude-glob '*.sqlite*' --exclude-glob 'mail.log' \
+              ./ \"$TARGET\"
+          "
+      - name: Kurzer Funktionstest
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://kuvert.net/)
+          echo "Startseite: $code"; test "$code" = "200"

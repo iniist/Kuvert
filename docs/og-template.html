@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!-- Vorlage für og-image.png (1200×630). Neu erzeugen: node docs/make-og.cjs -->
+<html lang="de"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../fonts.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:1200px;height:630px;background:#09090b;color:#ededef;font-family:Geist,sans-serif;position:relative;overflow:hidden}
+  .glow{position:absolute;top:-380px;right:-260px;width:1100px;height:900px;background:radial-gradient(closest-side,rgba(255,110,64,.30),transparent 70%)}
+  .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+    background-size:60px 60px;-webkit-mask-image:radial-gradient(ellipse 80% 80% at 80% 0%,#000 10%,transparent 70%)}
+  .in{position:absolute;inset:0;padding:72px 80px;display:flex;flex-direction:column;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:16px;font-weight:650;font-size:34px;letter-spacing:-.02em}
+  .mark{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,#ff9670,#e2562e);box-shadow:0 10px 30px -8px #ff7a4f}
+  .mark svg{width:32px;height:32px}
+  h1{font-size:92px;line-height:.98;letter-spacing:-.045em;font-weight:640}
+  h1 em{font-family:"Instrument Serif";font-style:italic;font-weight:400;color:#ff7a4f;font-size:1.08em;letter-spacing:-.02em}
+  .row{display:flex;justify-content:space-between;align-items:flex-end}
+  .url{font-family:"Geist Mono";font-size:26px;color:#a2a6ae}
+  .url b{color:#ff7a4f;font-weight:500;background:rgba(255,122,79,.12);border-radius:8px;padding:4px 10px}
+  .chips{display:flex;gap:12px}
+  .chip{font-size:20px;color:#a2a6ae;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:8px 18px}
+</style></head><body>
+<div class="glow"></div><div class="grid"></div>
+<div class="in">
+  <div class="logo"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#1b0a04" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.5 7 8.5 6.2L20.5 7"/></svg></span>Kuvert</div>
+  <h1>Geheimnisse verschicken.<br><em>Ohne Spuren.</em></h1>
+  <div class="row">
+    <div class="url">kuvert.net/<b>#1xK9vQm2Lr8p…</b></div>
+    <div class="chips"><span class="chip">Im Browser verschlüsselt</span><span class="chip">Kein Server</span></div>
+  </div>
+</div>
+</body></html>
