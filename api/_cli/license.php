@@ -2,6 +2,7 @@
 /*
  * Lokale Lizenzschlüssel verwalten (nur über die Kommandozeile / SSH).
  *
+ *   php -q api/_cli/license.php create   (auf Strato mit -q, sonst normal)
  *   php api/_cli/license.php create [--label="Name"] [--days=365]
  *   php api/_cli/license.php list
  *   php api/_cli/license.php revoke <SCHLÜSSEL>
@@ -13,13 +14,25 @@
  */
 declare(strict_types=1);
 
-if (PHP_SAPI !== 'cli') {
+// Nur über die Kommandozeile. Strato nutzt dort php-cgi (Aufruf: php -q …), daher zählt
+// „kein Web-Request“ statt PHP_SAPI === 'cli'.
+if (PHP_SAPI !== 'cli' && isset($_SERVER['REQUEST_METHOD'])) {
     http_response_code(404);
     exit;
 }
 require dirname(__DIR__) . '/_lib/bootstrap.php';
+$err = defined('STDERR') ? STDERR : fopen('php://stderr', 'w');   // php-cgi kennt STDERR nicht
 
-$args = array_slice($argv, 1);
+$args = array_slice($_SERVER['argv'] ?? $argv ?? [], 1);
+if (!$args && $_GET) {
+    // php-cgi (Strato) übergibt Argumente als $_GET: „create --label=x“ → ['…_php' => '', 'create' => '', '--label' => 'x']
+    foreach ($_GET as $k => $v) {
+        if (str_ends_with((string)$k, '_php')) {
+            continue;   // der Skriptname selbst
+        }
+        $args[] = $v === '' ? (string)$k : $k . '=' . $v;
+    }
+}
 $cmd = array_shift($args) ?? 'help';
 $opts = [];
 $pos = [];
@@ -38,7 +51,7 @@ try {
             $until = isset($opts['days']) ? kv_now() + 86400 * max(1, (int)$opts['days']) : null;
             $key = kv_license_create_local($db, $opts['label'] ?? null, $until);
             echo $key, "\n";
-            fwrite(STDERR, $until ? 'gültig bis ' . date('d.m.Y', $until) . "\n" : "unbegrenzt gültig\n");
+            fwrite($err, $until ? 'gültig bis ' . date('d.m.Y', $until) . "\n" : "unbegrenzt gültig\n");
             break;
         case 'list':
             $rows = $db->query('SELECT provider, status, display, label, created_at, valid_until FROM kv_licenses ORDER BY created_at')->fetchAll();
@@ -61,6 +74,6 @@ try {
             echo "Befehle: create [--label=…] [--days=…] | list | revoke <KEY> | activate <KEY>\n";
     }
 } catch (Throwable $e) {
-    fwrite(STDERR, 'Fehler: ' . $e->getMessage() . "\n");
+    fwrite($err, 'Fehler: ' . $e->getMessage() . "\n");
     exit(1);
 }

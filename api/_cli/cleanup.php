@@ -4,7 +4,9 @@
  * Nicht zwingend nötig – die API räumt auch nebenbei bei Aufrufen auf.
  */
 declare(strict_types=1);
-if (PHP_SAPI !== 'cli') {
+// Nur über die Kommandozeile. Strato nutzt dort php-cgi (Aufruf: php -q …), daher zählt
+// „kein Web-Request“ statt PHP_SAPI === 'cli'.
+if (PHP_SAPI !== 'cli' && isset($_SERVER['REQUEST_METHOD'])) {
     http_response_code(404);
     exit;
 }

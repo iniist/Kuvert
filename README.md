@@ -97,7 +97,7 @@ zeigt `pro.html` „Bald verfügbar“. Zum Testen vorher: `https://kuvert.net/p
 
 ### Lizenzen
 
-- **Eigene Schlüssel** (immer verfügbar): `php api/_cli/license.php create --label="Name" [--days=365]`
+- **Eigene Schlüssel** (immer verfügbar): `php -q api/_cli/license.php create --label="Name" [--days=365]` (per SSH im Ordner `kuvert-net`; Strato nutzt php-cgi, daher `-q`)
   (auch `list`, `revoke <KEY>`, `activate <KEY>`). Braucht SSH-Zugang zum Webspace.
 - **Verkauf über [Polar](https://polar.sh)** (`license.provider = 'polar'`): Polar tritt als Verkäufer auf
   (Merchant of Record) und kümmert sich um Umsatzsteuer und Rechnungen. Im Polar-Dashboard ein Produkt mit
@@ -112,7 +112,7 @@ zeigt `pro.html` „Bald verfügbar“. Zum Testen vorher: `https://kuvert.net/p
 2. **Konfiguration:** `api/config.sample.php` kopieren und ausfüllen:
    - am besten als `kuvert-config.php` **eine Ebene über** dem Ordner, auf den die Domain zeigt (nicht per Web erreichbar),
    - alternativ als `api/config.php` (durch `.htaccess` geschützt).
-   - `secret` setzen: `php -r 'echo bin2hex(random_bytes(32)), "\n";'`
+   - `secret` setzen: `openssl rand -hex 32` (geht auf jedem Mac/Linux)
 3. **E-Mail (optional):** Ein Postfach wie `kuvert@kuvert.net` anlegen und SMTP-Daten eintragen
    (`smtp.strato.de`, Port 465, `ssl`). Danach `mail.enabled = true`.
 4. **Hochladen:** alles außer `tests/` (und ohne `.git`). Die Tabellen werden beim ersten Aufruf automatisch angelegt.
@@ -120,7 +120,7 @@ zeigt `pro.html` „Bald verfügbar“. Zum Testen vorher: `https://kuvert.net/p
    - `https://kuvert.net/api/index.php?a=config` muss JSON liefern.
    - `https://kuvert.net/api/config.php` und `https://kuvert.net/api/_lib/bootstrap.php` müssen **403** liefern.
 6. **PHP-Version:** 8.1 oder neuer (im Strato-Menü einstellbar). Benötigt werden PDO (mysql), openssl und curl.
-7. Optional einen Cronjob für `php api/_cli/cleanup.php` einrichten. Das ist nicht nötig, weil die API nebenbei aufräumt.
+7. Optional einen Cronjob für `php -q api/_cli/cleanup.php` einrichten. Das ist nicht nötig, weil die API nebenbei aufräumt.
 
 ### Lokal entwickeln & testen
 
