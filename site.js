@@ -25,49 +25,59 @@
   sync();
   if (btn) btn.addEventListener("click", toggleTheme);
 
-  /* Mobiles Menü: übernimmt die Links aus der Navigation, sichtbar unter 720 px */
+  /* Menü (Burger): auf dem Handy alle Links, auf dem Desktop der Rest neben Preise/Pro/FAQ.
+     Übernimmt die Links aus der Navigation, darunter Nebenseiten und ganz unten den Farbschema-Schalter. */
   var navLinks = document.querySelector(".nav-links");
   var navBar = document.getElementById("nav");
   if (navLinks && navBar) {
     var links = Array.prototype.slice.call(navLinks.querySelectorAll("a.nl, a.icon-btn[href]"));
-    if (links.length) {
-      var menu = document.createElement("div");
-      menu.className = "mobile-menu"; menu.id = "mobileMenu"; menu.hidden = true;
-      links.forEach(function (a) {
-        var item = document.createElement("a");
-        item.href = a.getAttribute("href");
-        if (a.target) { item.target = a.target; item.rel = a.rel; }
-        var label = (a.textContent || "").replace(/\s+/g, " ").trim() || a.getAttribute("aria-label") || "";
-        item.textContent = /GitHub/i.test(a.getAttribute("aria-label") || "") ? "Quelltext auf GitHub" : label;
-        menu.appendChild(item);
+    var menu = document.createElement("div");
+    menu.className = "mobile-menu"; menu.id = "mobileMenu"; menu.hidden = true;
+    var addLink = function (href, label, cls, a) {
+      var item = document.createElement("a");
+      item.href = href; item.textContent = label;
+      if (cls) item.className = cls;
+      if (a && a.target) { item.target = a.target; item.rel = a.rel; }
+      menu.appendChild(item);
+    };
+    links.forEach(function (a) {
+      var label = (a.textContent || "").replace(/\s+/g, " ").trim() || a.getAttribute("aria-label") || "";
+      if (/GitHub/i.test(a.getAttribute("aria-label") || "")) label = "Quelltext auf GitHub";
+      addLink(a.getAttribute("href"), label, a.classList.contains("menu-only") || a.classList.contains("icon-btn") ? "" : "dup", a);
+    });
+    var here = location.pathname.replace(/\/$/, "/index.html").split("/").pop();
+    var sub = document.createElement("div"); sub.className = "menu-sub";
+    [["teams.html", "Kuvert Teams"], ["impressum.html", "Impressum"], ["datenschutz.html", "Datenschutz"], ["nutzungsbedingungen.html", "Nutzungsbedingungen"]]
+      .forEach(function (p) {
+        if (p[0] === here) return;
+        var a = document.createElement("a"); a.href = "/" + p[0]; a.textContent = p[1]; sub.appendChild(a);
       });
-      if (btn) {
-        menuTheme = document.createElement("button");
-        menuTheme.type = "button"; menuTheme.className = "menu-theme"; menuTheme.setAttribute("role", "switch");
-        menuTheme.setAttribute("aria-label", "Dunkles Design");
-        menuTheme.innerHTML = '<span class="mt-icon" aria-hidden="true">' + MOON + '</span><span class="mt-label">Dunkles Design</span><span class="mt-switch" aria-hidden="true"><span></span></span>';
-        menuTheme.addEventListener("click", function (e) { e.stopPropagation(); toggleTheme(); });
-        menu.appendChild(menuTheme);
-        document.body.classList.add("has-menu-theme");
-        sync();
-      }
-      navBar.appendChild(menu);
-      var MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
-      var CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
-      var mb = document.createElement("button");
-      mb.type = "button"; mb.className = "icon-btn menu-btn"; mb.innerHTML = MENU;
-      mb.setAttribute("aria-label", "Menü öffnen"); mb.setAttribute("aria-expanded", "false"); mb.setAttribute("aria-controls", "mobileMenu");
-      navLinks.appendChild(mb);
-      var setOpen = function (open) {
-        menu.hidden = !open; mb.innerHTML = open ? CLOSE : MENU;
-        mb.setAttribute("aria-expanded", String(open)); mb.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
-      };
-      mb.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden); });
-      menu.addEventListener("click", function (e) { if (e.target.closest("a")) setOpen(false); });
-      document.addEventListener("click", function (e) { if (!menu.hidden && !navBar.contains(e.target)) setOpen(false); });
-      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { setOpen(false); mb.focus(); } });
-      window.addEventListener("resize", function () { if (window.innerWidth > 720 && !menu.hidden) setOpen(false); });
+    menu.appendChild(sub);
+    if (btn) {
+      menuTheme = document.createElement("button");
+      menuTheme.type = "button"; menuTheme.className = "menu-theme"; menuTheme.setAttribute("role", "switch");
+      menuTheme.setAttribute("aria-label", "Dunkles Design");
+      menuTheme.innerHTML = '<span class="mt-icon" aria-hidden="true">' + MOON + '</span><span class="mt-label">Dunkles Design</span><span class="mt-switch" aria-hidden="true"><span></span></span>';
+      menuTheme.addEventListener("click", function (e) { e.stopPropagation(); toggleTheme(); });
+      menu.appendChild(menuTheme);
+      document.body.classList.add("has-menu-theme");
+      sync();
     }
+    (navBar.querySelector(".nav-in") || navBar).appendChild(menu);
+    var MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+    var CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+    var mb = document.createElement("button");
+    mb.type = "button"; mb.className = "icon-btn menu-btn"; mb.innerHTML = MENU;
+    mb.setAttribute("aria-label", "Menü öffnen"); mb.setAttribute("aria-expanded", "false"); mb.setAttribute("aria-controls", "mobileMenu");
+    navLinks.appendChild(mb);
+    var setOpen = function (open) {
+      menu.hidden = !open; mb.innerHTML = open ? CLOSE : MENU;
+      mb.setAttribute("aria-expanded", String(open)); mb.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+    };
+    mb.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden); });
+    menu.addEventListener("click", function (e) { if (e.target.closest("a")) setOpen(false); });
+    document.addEventListener("click", function (e) { if (!menu.hidden && !navBar.contains(e.target)) setOpen(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { setOpen(false); mb.focus(); } });
   }
 
   // Service Worker (installierbare App, Offline-Fallback für /app)

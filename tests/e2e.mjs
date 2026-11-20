@@ -196,14 +196,26 @@ try {
   const anchor = await rcv.newPage(); watch(anchor, "anker");
   await anchor.goto(BASE + "/index.html#faq");
   assert.equal(await anchor.evaluate(() => document.body.classList.contains("recipient")), false);
-  step("Startseite: Werkzeug, alte Links (#0/#1), Sprungmarken, Knopf zur App");
+  const visibleNav = await hp.$$eval(".nav-links a.nl", (as) => as.filter((a) => a.offsetParent).map((a) => a.textContent));
+  assert.deepEqual(visibleNav, ["Preise", "Pro", "FAQ"], "Desktop-Kopfzeile: Preise, Pro, FAQ");
+  assert.ok(!(await hp.isVisible("#themeToggle")), "Farbschema nur im Menü");
+  await hp.click(".menu-btn");
+  await hp.waitForSelector("#mobileMenu", { state: "visible" });
+  const deskMenu = await hp.$$eval("#mobileMenu a", (as) => as.filter((a) => a.offsetParent).map((a) => a.textContent));
+  assert.deepEqual(deskMenu, ["So geht's", "Quelltext auf GitHub", "Kuvert Teams", "Impressum", "Datenschutz", "Nutzungsbedingungen"]);
+  assert.ok(await hp.isVisible("#mobileMenu .menu-theme"));
+  await hp.screenshot({ path: path.join(OUT, "a6-desk-menu.png") });
+  await hp.keyboard.press("Escape");
+  await hp.waitForSelector("#mobileMenu", { state: "hidden" });
+  step("Startseite: Werkzeug, alte Links (#0/#1), Sprungmarken, Knopf zur App, Desktop-Menü");
 
   const ph = await phone.newPage(); watch(ph, "start-handy");
   await ph.goto(BASE + "/index.html");
   assert.ok(await ph.isVisible(".nav-cta"), "„Schreiben“ auch auf dem Handy sichtbar");
   await ph.click(".menu-btn");
   await ph.waitForSelector("#mobileMenu", { state: "visible" });
-  assert.deepEqual(await ph.$$eval("#mobileMenu a", (as) => as.map((a) => a.textContent)), ["So geht's", "Preise", "Pro", "FAQ", "Quelltext auf GitHub"]);
+  assert.deepEqual(await ph.$$eval("#mobileMenu > a", (as) => as.map((a) => a.textContent)), ["So geht's", "Preise", "Pro", "FAQ", "Quelltext auf GitHub"]);
+  assert.deepEqual(await ph.$$eval("#mobileMenu .menu-sub a", (as) => as.map((a) => a.textContent)), ["Kuvert Teams", "Impressum", "Datenschutz", "Nutzungsbedingungen"]);
   assert.ok(!(await ph.isVisible("#themeToggle")), "Farbschema-Knopf auf dem Handy nur im Menü");
   const themeBefore = await ph.getAttribute("html", "data-theme");
   await ph.click("#mobileMenu .menu-theme");
