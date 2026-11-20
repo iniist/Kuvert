@@ -312,7 +312,6 @@ body.recipient .page,body.statusmode .page{display:none}
 .pill-plain span{color:var(--accent);margin-left:2px}
 
 /* ---------- Mobiles Menü ---------- */
-.menu-btn{display:none}
 .mobile-menu{position:absolute;left:0;right:0;top:100%;z-index:40;padding:8px clamp(20px,4vw,40px) 18px;
   background:var(--bg);border-bottom:1px solid var(--line-2);box-shadow:0 24px 40px -24px rgba(0,0,0,.5);
   display:flex;flex-direction:column;gap:2px;animation:menu-in .18s ease-out}
@@ -331,12 +330,24 @@ body.recipient .page,body.statusmode .page{display:none}
 .menu-theme .mt-switch span{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--text);transition:transform .2s}
 .menu-theme[aria-checked="true"] .mt-switch{background:var(--accent);border-color:var(--accent)}
 .menu-theme[aria-checked="true"] .mt-switch span{transform:translateX(18px);background:#fff}
+.menu-sub{display:flex;flex-wrap:wrap;gap:2px 4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.mobile-menu .menu-sub a{padding:8px 12px;font-size:14px;font-weight:500;color:var(--text-2)}
+.mobile-menu .menu-sub a::after{content:none}
+.menu-sub + .menu-theme{margin-top:4px}
+/* Kopfzeile: GitHub und Farbschema nur im Menü, „So geht's“ ebenso */
+.nav-links a.icon-btn[href],.nav-links a.nl.menu-only,body.has-menu-theme #themeToggle{display:none}
 @media(max-width:720px){
-  .nav-links a.nl,.nav-links a.icon-btn{display:none}
-  body.has-menu-theme #themeToggle{display:none}
-  .menu-btn{display:grid}
+  .nav-links a.nl{display:none}
 }
-@media(min-width:721px){ .mobile-menu{display:none!important} }
+/* Desktop: Menü als Klapptafel rechts unter dem Burger */
+@media(min-width:721px){
+  .nav-in{position:relative}
+  .mobile-menu{left:auto;right:0;top:calc(100% - 4px);width:320px;padding:8px;border:1px solid var(--line-2);border-radius:16px;
+    box-shadow:0 24px 50px -20px rgba(0,0,0,.55)}
+  .mobile-menu a{padding:11px 12px;font-size:15px}
+  .mobile-menu a.dup{display:none}       /* steht schon sichtbar in der Kopfzeile */
+  .menu-theme{font-size:15px;padding:12px;border-radius:10px}
+}
 .plan .price{line-height:1.45;min-height:86px}
 .plan .price b{display:block;margin:0 0 2px}
 @media(max-width:1020px){ .plan .price{min-height:0} }
